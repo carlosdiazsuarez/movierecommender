@@ -21,6 +21,7 @@ class omdb_connector(object):
     workingDir=os.getcwd() +'\\'
     MOVIES_TO_BE_LOAD_INITIAL_LOAD = 'OD_CK1_InitialSetMovieNames_from_DBpedia.txt'
     f_movie_1stload_name = workingDir + MOVIES_TO_BE_LOAD_INITIAL_LOAD
+    
     p_movie_type = 'movie'
     p_year = ""
     p_plot = 'full'
@@ -28,10 +29,10 @@ class omdb_connector(object):
     not_exist_movie_name = 'NOT EXISTING FILM'
 
 
-    def __init__(self, params):
+    def __init__(self):
         self.workingDir=os.getcwd() +'\\'
         self.MOVIES_TO_BE_LOAD_INITIAL_LOAD = 'OD_CK1_InitialSetMovieNames_from_DBpedia.txt'
-        self.f_movie_1stload_name = workingDir + MOVIES_TO_BE_LOAD_INITIAL_LOAD
+        self.f_movie_1stload_name = workingDir + self.MOVIES_TO_BE_LOAD_INITIAL_LOAD
         self.p_movie_type = 'movie'
         self.p_year = ""
         self.p_plot = 'full'
@@ -133,7 +134,7 @@ class omdb_connector(object):
         f_1stload_movie.close()
     
     
-    def getMovie(self, movie_name_to_search):
+    def getMovie_by_Name(self, movie_name_to_search):
         p_movie_name_parsed = self.parse_movieName(movie_name_to_search)
         ombd_query = self.build_ombdQuery_byTitle(p_movie_name_parsed, self.p_year)
         json_movie_result = self.fire_ombdQuery(ombd_query)
