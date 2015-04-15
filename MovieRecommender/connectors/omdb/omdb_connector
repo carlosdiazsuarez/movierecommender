@@ -16,7 +16,7 @@ import urllib2
 import json    # JSON (JavaScript Object Notation) is a compact, text based format for computers to exchange data and is once loaded into Python just like a dictionary. 
 
 
-class OMDB_connector(object):
+class omdb_connector(object):
     
     workingDir=os.getcwd() +'\\'
     MOVI ES_TO_BE_LOAD_INITIAL_LOAD = 'OD_CK1_InitialSetMovieNames_from_DBpedia.txt'
