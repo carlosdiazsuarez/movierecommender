@@ -24,7 +24,7 @@ class omdb_connector(object):
     p_movie_type = 'movie'
     p_year = ""
     p_plot = 'full'
-p_tomatoes = False
+    p_tomatoes = False
     not_exist_movie_name = 'NOT EXISTING FILM'
 
 
@@ -95,7 +95,7 @@ p_tomatoes = False
     def load_Initial_Set_Movies(self):
         
         # get non existing film result
-        p_m ovie_name_not_Exist_parsed = self.parse_movieName(self.not_exist_movie_name)
+        p_movie_name_not_Exist_parsed = self.parse_movieName(self.not_exist_movie_name)
         ombd_query_NotExist = self.build_ombdQuery_byTitle(p_movie_name_not_Exist_parsed, self.p_year)
         json_movie_notExist = self.fire_ombdQuery(ombd_query_NotExist)
         #print json_movie_notExist
@@ -133,7 +133,7 @@ p_tomatoes = False
         f_1stload_movie.close()
     
     
-     def getMovie(self, movie_name_to_search):
+    def getMovie(self, movie_name_to_search):
         p_movie_name_parsed = self.parse_movieName(movie_name_to_search)
         ombd_query = self.build_ombdQuery_byTitle(p_movie_name_parsed, self.p_year)
         json_movie_result = self.fire_ombdQuery(ombd_query)
