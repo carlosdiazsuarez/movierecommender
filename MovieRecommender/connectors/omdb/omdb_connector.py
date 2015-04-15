@@ -19,7 +19,7 @@ import json    # JSON (JavaScript Object Notation) is a compact, text based form
 class omdb_connector(object):
     
     workingDir=os.getcwd() +'\\'
-    MOVI ES_TO_BE_LOAD_INITIAL_LOAD = 'OD_CK1_InitialSetMovieNames_from_DBpedia.txt'
+    MOVIES_TO_BE_LOAD_INITIAL_LOAD = 'OD_CK1_InitialSetMovieNames_from_DBpedia.txt'
     f_movie_1stload_name = workingDir + MOVIES_TO_BE_LOAD_INITIAL_LOAD
     p_movie_type = 'movie'
     p_year = ""
