@@ -120,7 +120,7 @@ class twitter_streaming_connector(object):
         
         
     def getTweetStreamingLive(self, topic_to_search):
-        print '\n\nCLASS (twitter_streaming_connector) - Twitter Streaming Load - Topic: ' + topic_to_search
+        print 'CLASS (twitter_streaming_connector) - Twitter Streaming Load - Topic: ' + topic_to_search
 
         auth = OAuthHandler(self.ckey, self.csecret)
         auth.set_access_token(self.atoken, self.asecret)
@@ -148,7 +148,7 @@ class twitter_streaming_connector(object):
             # print len(self.tweets_list_streamed)
             # print self.tweets_list_streamed
             print 'Sending Tweeters back (in the form of a list)'            
-            print 'CLASS (twitter_streaming_connector) - Total Streming Load: ' + str(len(self.tweets_list_streamed)) + '\n'        
+            print 'CLASS (twitter_streaming_connector) - Total Streaming Load: ' + str(len(self.tweets_list_streamed)) + '\n'        
             return self.tweets_list_streamed
 
 
