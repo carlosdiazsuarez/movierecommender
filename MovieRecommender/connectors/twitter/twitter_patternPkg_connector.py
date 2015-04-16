@@ -13,7 +13,6 @@ class twitter_patternPkg_connector(object):
     classdocs
     '''
 
-
     def __init__(self):
         self.FILE_STORAGE = "OD_CK1_Source4_Tweeter_InitialLoad.csv"
         self.search_topic = ''
