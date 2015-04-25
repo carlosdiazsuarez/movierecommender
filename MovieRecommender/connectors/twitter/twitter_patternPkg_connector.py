@@ -17,6 +17,18 @@ class twitter_patternPkg_connector(object):
         self.FILE_STORAGE = "OD_CK1_Source4_Tweeter_InitialLoad.csv"
         self.search_topic = ''
 
+    def formatData2Json(self, tweet_id, tweet_date, tweet_subject, tweet_text):
+        data = {}
+        data['tweet_id'] = tweet_id
+        data['created_at'] = tweet_date
+        data['movie_name'] = tweet_subject
+        data['text'] = tweet_text
+        json_data = json.dumps(data)
+        print json_data
+        #print json.dumps(json_data, indent= 2, separators=(',',':'))
+        return json_data
+
+
     def getTweetSecureLoad(self, topic):
         # This example retrieves tweets containing given keywords from Twitter.
 
@@ -58,7 +70,7 @@ class twitter_patternPkg_connector(object):
 
         tweet_list = []
         for i in range(1):
-            for tweet in engine.search(oneSubject, start=prev, count=15, cached=False):
+            for tweet in engine.search(oneSubject, start=prev, count=5, cached=False):
                 if 'http' in tweet.text:
                     posi = tweet.text.index('http')
                     tweet.text = tweet.text[0:posi-1]
@@ -69,7 +81,14 @@ class twitter_patternPkg_connector(object):
                     index.add(tweet.text)
                     
                     tweet_list.append([tweet.id, tweet.date, oneSubject, tweet.text])
-                            
+                    #tweetJson = self.formatData2Json(tweet.id, tweet.date, oneSubject, tweet.text)
+                    #print tweetJson  
+                    # BUILD A JSON
+                    #http://stackoverflow.com/questions/14547916/how-can-i-loop-over-entries-in-json
+                    #BUILD A LIST OF DICTIONARIES                    
+                    #http://stackoverflow.com/questions/2733813/iterating-through-a-json-object
+                    
+                    
                 # Continue mining older tweets in next iteration.
                 prev = tweet.text
 
@@ -77,5 +96,6 @@ class twitter_patternPkg_connector(object):
         # Create a .csv in pattern/examples/01-web/
         # table.save(pd("OD_CK1_Source4_Tweeter_InitialLoad.csv"))
         print "CLASS (Twitter_PatternPKG) - Total Secure Twitter Load: " +  str(len(table)) + '\n'
+        #print json.dumps(tweet_list)
         
         return tweet_list
