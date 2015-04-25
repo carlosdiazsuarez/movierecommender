@@ -15,7 +15,6 @@ import codecs
 
     
 
-from connectors.omdb.omdb_connector import omdb_connector
 from connectors.http_api_request.http_api_request_connector import http_api_request_connector
 from connectors.virtuoso.virtuoso_connector import virtuoso_connector
 
