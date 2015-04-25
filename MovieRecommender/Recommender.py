@@ -302,8 +302,10 @@ def main():
 
     print 'FINISHED ALL SEARCHES: ' + film_to_search
     
-
-    if 1 == 1:
+    
+    ##########################################################################
+    # jaime taking 100 movie names, getting all their information from the sources + into virtuoso
+    if 1 == 2:
         # THIS IS JUST FOR JAIME TO TEST BIG LOADS into virtuoso
         JAIME_wants_to_load_his_file_with_100_films(metadata_mappings, metadata_content)
 
