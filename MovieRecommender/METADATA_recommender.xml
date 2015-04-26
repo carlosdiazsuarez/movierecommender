@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata_recommender>
+	<!--general movie properties (URI). Schema for the data lake -->
+	<URI_properties_DataLake_schema>
+		<uri_property name ="movie_name"> https://schema.org/name </uri_property>	
+		<uri_property name ="movie_desc"> https://schema.org/description </uri_property>	
+		<uri_property name ="movie_genre"> https://schema.org/genre </uri_property>	
+		<uri_property name ="movie_director"> https://schema.org/director </uri_property>	
+		<uri_property name ="movie_author"> https://schema.org/author </uri_property>	
+		<uri_property name ="movie_actor"> https://schema.org/actor </uri_property>	
+		<uri_property name ="movie_year"> https://schema.org/copyrightYear </uri_property>	
+		<uri_property name ="movie_runtime"> https://schema.org/duration </uri_property>	
+		<uri_property name ="movie_studio"> https://schema.org/productionCompany </uri_property>	
+		<uri_property name ="movie_language"> https://schema.org/inLanguage </uri_property>	
+		<uri_property name ="movie_country"> https://schema.org/Country </uri_property>	
+		<uri_property name ="movie_budget"> http://dbpedia.org/ontology/budget </uri_property>	
+		<uri_property name ="movie_comment"> https://schema.org/comment </uri_property>	
+		<uri_property name ="movie_awards"> https://schema.org/award </uri_property>	
+		<uri_property name ="movie_rating"> https://schema.org/aggregateRating </uri_property>	
+		<uri_property name ="movie_poster"> https://schema.org/image </uri_property>	
+		<uri_property name ="information_date"> http://dbpedia.org/ontology/date </uri_property>	
+
+		<uri_property name ="user_gender"> https://schema.org/gender </uri_property>	
+		<uri_property name ="user_age"> https://schema.org/typicalAgeRange </uri_property>	
+		<uri_property name ="user_occupation"> https://schema.org/JobPosting </uri_property>	
+		<uri_property name ="user_zipcode"> https://schema.org/postalCode </uri_property>	
+		<uri_property name ="user_rating"> https://schema.org/Rating </uri_property>	
+		<uri_property name ="user_name"> https://schema.org/name </uri_property>	
+	
+		<uri_property name ="cinema_name"> https://schema.org/name </uri_property>	
+		<uri_property name ="cinema_location"> https://schema.org/location </uri_property>	
+	</URI_properties_DataLake_schema>
+	<Recommender_sources>
+		<source_name name ="OMBD_source">
+			<location> http://www.omdbapi.com/ </location>	
+			<query_type> HTTP_API_request </query_type>	
+			<attributes>
+				<attr_property name ="movie_name"> Title </attr_property>	
+				<attr_property name ="movie_desc"> Plot </attr_property>	
+				<attr_property name ="movie_genre"> Genre </attr_property>	
+				<attr_property name ="movie_director"> Director </attr_property>	
+				<attr_property name ="movie_author"> Writer </attr_property>			
+				<attr_property name ="movie_actor"> Actors </attr_property>	
+				<attr_property name ="movie_year"> Year </attr_property>	
+				<attr_property name ="movie_runtime"> Runtime </attr_property>	
+				<attr_property name ="movie_language"> Language </attr_property>	
+				<attr_property name ="movie_country"> Country </attr_property>	
+				<attr_property name ="movie_awards"> Awards </attr_property>	
+				<attr_property name ="movie_rating"> imdbRating </attr_property>	
+				<attr_property name ="movie_poster"> Poster </attr_property>	
+			</attributes>
+		</source_name>
+		<source_name name ="DBPEDIA_source">
+			<location> http://dbpedia.org/page/ </location>	
+			<query_type> SPARQL </query_type>	
+			<attributes>
+				<attr_property name ="movie_name"> name </attr_property>	
+				<attr_property name ="movie_desc"> description </attr_property>	
+				<attr_property name ="movie_genre"> genre </attr_property>	
+				<attr_property name ="movie_director"> director </attr_property>	
+				<attr_property name ="movie_author"> author </attr_property>	
+				<attr_property name ="movie_actor"> actor </attr_property>	
+				<attr_property name ="movie_year"> copyrightYear </attr_property>	
+				<attr_property name ="movie_runtime"> duration </attr_property>	
+				<attr_property name ="movie_studio"> productionCompany </attr_property>	
+				<attr_property name ="movie_language"> inLanguage </attr_property>	
+				<attr_property name ="movie_country"> Country </attr_property>	
+				<attr_property name ="movie_budget"> budget </attr_property>	
+				<attr_property name ="movie_comment"> comment </attr_property>	
+				<attr_property name ="movie_awards"> award </attr_property>	
+				<attr_property name ="movie_rating"> aggregateRating </attr_property>	
+				<attr_property name ="movie_poster"> image </attr_property>
+			</attributes>
+		</source_name>
+		<source_name name ="TWITTER_source">
+			<location> TWEEPY_Python </location>	
+			<query_type> TWITTER_Topic  </query_type>	
+			<attributes>
+				<attr_property name ="information_date"> created_at </attr_property>		
+				<attr_property name ="movie_name"> movie_name </attr_property>	
+				<attr_property name ="user_name"> user_name </attr_property>	
+				<attr_property name ="movie_comment"> text </attr_property>
+			</attributes>
+		</source_name>
+		<source_name name ="GOOGLE_showtimes_source">
+			<location> https://www.google.es/movies </location>	
+			<query_type> HTTP_request </query_type>	
+			<attributes>
+				<attr_property name ="information_date"> update_date </attr_property>		
+				<attr_property name ="cinema_name"> cinema </attr_property>	
+				<attr_property name ="cinema_location"> location </attr_property>	
+				<attr_property name ="movie_name"> movie_name </attr_property>
+			</attributes>
+		</source_name>
+		<source_name name ="MOVIELENS_source">
+			<location> https://localhost:8080 </location>	
+			<query_type> SQL </query_type>	
+			<attributes>
+				<attr_property name ="movie_name"> Title </attr_property>	
+				<attr_property name ="movie_genre"> Genre </attr_property>	
+				<attr_property name ="user_gender"> Title </attr_property>	
+				<attr_property name ="user_age"> Plot </attr_property>	
+				<attr_property name ="user_occupation"> Genre </attr_property>	
+				<attr_property name ="user_zipcode"> Title </attr_property>	
+				<attr_property name ="user_rating"> Rating </attr_property>	
+				<attr_property name ="information_Date"> Timestamp </attr_property>		
+			</attributes>
+		</source_name>
+	</Recommender_sources>
+</metadata_recommender>	

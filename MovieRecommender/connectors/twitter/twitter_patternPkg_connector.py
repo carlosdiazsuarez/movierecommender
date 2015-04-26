@@ -7,16 +7,29 @@ from pattern.web import Twitter, hashtags
 from pattern.db  import Datasheet, pprint, pd
 import codecs
 import json
+import string
 
 class twitter_patternPkg_connector(object):
     '''
     classdocs
     '''
 
-
     def __init__(self):
         self.FILE_STORAGE = "OD_CK1_Source4_Tweeter_InitialLoad.csv"
         self.search_topic = ''
+
+    def formatData2Json(self, tweet_id, tweet_date, tweet_subject, tweet_text):
+        data = {}
+        data['tweet_id'] = tweet_id
+        data['created_at'] = tweet_date
+        data['topic'] = tweet_subject         #data['movie_name'] = tweet_subject
+        data['text'] = tweet_text
+        #json_data = json.dumps(data)
+        json_data = data
+        #print json_data
+        # print json.dumps(json_data, indent= 2, separators=(',',':'))
+        return json_data
+
 
     def getTweetSecureLoad(self, topic):
         # This example retrieves tweets containing given keywords from Twitter.
@@ -57,26 +70,49 @@ class twitter_patternPkg_connector(object):
         oneSubject = self.search_topic
         # oneSubject
 
+        tweet_list_Json = []  # list of JSons
         tweet_list = []
-        for i in range(1):
-            for tweet in engine.search(oneSubject, start=prev, count=15, cached=False):
-                if 'http' in tweet.text:
-                    posi = tweet.text.index('http')
-                    tweet.text = tweet.text[0:posi-1]
-                            
-                # Only add the tweet to the table if it doesn't already exists.
-                if len(table) == 0 or tweet.text not in index :
-                    table.append([tweet.id, tweet.date, oneSubject, tweet.text])
-                    index.add(tweet.text)
-                    
-                    tweet_list.append([tweet.id, tweet.date, oneSubject, tweet.text])
-                            
-                # Continue mining older tweets in next iteration.
-                prev = tweet.text
-
-
+        try:
+            for i in range(1):
+                for tweet in engine.search(oneSubject, start=prev, count=8, cached=False):
+                    if 'http' in tweet.text:
+                        posi = tweet.text.index('http')
+                        tweet.text = tweet.text[0:posi-1]
+                                
+                    # Only add the tweet to the table if it doesn't already exists.
+                    if len(table) == 0 or tweet.text not in index :
+                        table.append([tweet.id, tweet.date, oneSubject, tweet.text])
+                        index.add(tweet.text)
+                        
+                        tweet_list.append([tweet.id, tweet.date, oneSubject, tweet.text])
+                        #tweetJson = self.formatData2Json(tweet.id, tweet.date, oneSubject, tweet.text)
+                        #tweetJson = self.formatData2Json(tweet.id, tweet.date, oneSubject.replace(' film', ''), tweet.text)
+                        tweet.text = filter(lambda x: x in string.printable, tweet.text) # remove weird stuff
+                        tweet.text = tweet.text.replace('"', '') # remove weird stuff
+                        tweet.text = tweet.text.replace('\n', '') # remove weird stuff
+                        tweetJson = self.formatData2Json(tweet.id, tweet.date, oneSubject.replace(' film', ''), tweet.text) # remove artificiall film 
+                        
+                        tweet_list_Json.append(tweetJson)
+                        #print tweetJson  
+                        
+                        # BUILD A JSON
+                        #http://stackoverflow.com/questions/14547916/how-can-i-loop-over-entries-in-json
+                        #BUILD A LIST OF DICTIONARIES                    
+                        #http://stackoverflow.com/questions/2733813/iterating-through-a-json-object
+                        
+                        
+                    # Continue mining older tweets in next iteration.
+                    prev = tweet.text
+    
+        except Exception:
+            print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - ERROR!! - ([twitter_patternPkg_connector] getTweetSecureLoad)'
+            print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - ERROR!!   (film: ' + oneSubject +')' 
+            pass
+        
         # Create a .csv in pattern/examples/01-web/
         # table.save(pd("OD_CK1_Source4_Tweeter_InitialLoad.csv"))
         print "CLASS (Twitter_PatternPKG) - Total Secure Twitter Load: " +  str(len(table)) + '\n'
+        #print json.dumps(tweet_list)
         
-        return tweet_list
+        # return tweet_list
+        return tweet_list_Json
