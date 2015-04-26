@@ -83,8 +83,10 @@ class virtuoso_connector(object):
 
             
         except SPARQLExceptions.QueryBadFormed:
+            print '\n' + '*'*40
             print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - SPARQLExceptions.QueryBadFormed'
             print 'VIRTUOSO insert_triples_movie_info FAILED!!!!!!: (film: ' + in_film_name +') ('+ in_source_name + ')'
+            print '*'*40
             pass
         
         
