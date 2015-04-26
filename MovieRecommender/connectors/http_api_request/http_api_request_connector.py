@@ -67,31 +67,31 @@ class http_api_request_connector(object):
         return json_result
 
 
-    def print_movieOMDb(self, in_OMDbjson):
+    def print_movie(self, in_json):
         print 'PIECES OF RESULT (function)'
-        print 'TITLE        - ' + in_OMDbjson['Title']
-        print 'YEAR         - ' + in_OMDbjson['Year']
-        print 'RATED        - ' + in_OMDbjson['Rated']
-        print 'RUNTIME      - ' + in_OMDbjson['Runtime']
-        print 'GENRE        - ' + in_OMDbjson['Genre']
-        print 'DIRECTOR     - ' + in_OMDbjson['Director']
-        print 'WRITER       - ' + in_OMDbjson['Writer']
-        print 'ACTORS       - ' + in_OMDbjson['Actors']
-        print 'PLOT         - ' + in_OMDbjson['Plot']
-        print 'LANGUAGE     - ' + in_OMDbjson['Language']
-        print 'COUNTRY      - ' + in_OMDbjson['Country']
-        print 'AWARDS       - ' + in_OMDbjson['Awards']
-        print 'POSTER       - ' + in_OMDbjson['Poster']
-        print 'imdbRATING   - ' + in_OMDbjson['imdbRating']
-        print 'imdbVOTES    - ' + in_OMDbjson['imdbVotes']
-        print 'imdbID       - ' + in_OMDbjson['imdbID']
+        print 'TITLE        - ' + in_json['Title']
+        print 'YEAR         - ' + in_json['Year']
+        print 'RATED        - ' + in_json['Rated']
+        print 'RUNTIME      - ' + in_json['Runtime']
+        print 'GENRE        - ' + in_json['Genre']
+        print 'DIRECTOR     - ' + in_json['Director']
+        print 'WRITER       - ' + in_json['Writer']
+        print 'ACTORS       - ' + in_json['Actors']
+        print 'PLOT         - ' + in_json['Plot']
+        print 'LANGUAGE     - ' + in_json['Language']
+        print 'COUNTRY      - ' + in_json['Country']
+        print 'AWARDS       - ' + in_json['Awards']
+        print 'POSTER       - ' + in_json['Poster']
+        print 'imdbRATING   - ' + in_json['imdbRating']
+        print 'imdbVOTES    - ' + in_json['imdbVotes']
+        print 'imdbID       - ' + in_json['imdbID']
         print '-'*20
         print '-'*20
 
 
-    def print_Basic_movieOMDb(self, in_OMDbjson):
-        print 'TITLE        - ' + in_OMDbjson['Title']
-        print json.dumps(in_OMDbjson, indent=2)
+    def print_Basic_movie(self, in_json):
+        print 'TITLE        - ' + in_json['Title']
+        print json.dumps(in_json, indent=2)
 
 
     def load_Initial_Set_Movies(self):
@@ -124,7 +124,7 @@ class http_api_request_connector(object):
             else:
                 print 'Movie to search: ' + movie_name_to_search
                 #self.print_movieOMDb(json_movie_result)
-                self.print_Basic_movieOMDb(json_movie_result)
+                self.print_Basic_movie(json_movie_result)
                 #print 'EXISTED \n\n\n\n'
                 print 'EXISTED'
                 
@@ -142,6 +142,13 @@ class http_api_request_connector(object):
         return json_movie_result
     
     def getMovie_Information(self, in_http_api_request):
-        json_movie_result = self.fire_http_api_Query(in_http_api_request)
+        json_movie_result = {}
+        try:        
+            json_movie_result = self.fire_http_api_Query(in_http_api_request)
+        except Exception:
+            print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - ERROR!! - ([http_api_request_connector] getMovie_Information)'
+            print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - ERROR!!   \n(query: ' + in_http_api_request +')' 
+            pass
+            
         return json_movie_result
-    
+        
