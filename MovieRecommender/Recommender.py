@@ -117,9 +117,12 @@ def sourceField_2_globalSchemaURI(in_source_item, in_source_name, in_metadata_ma
     for source in in_metadata_content:                   # list of dictionaries
         if source['source_name'] == in_source_name:     
             if in_source_item in source['attributes']:
+                #print 'searching for :' + in_source_item
                 pos = source['attributes'].index(in_source_item)
+                #print 'source[attributes] = ' + str(source['attributes'])
+                #print 'POS: '+ str(pos)
                 global_schema_field = source['attributes'][pos-1]
-                # print 'FOUND SOURCE FOUND ITEM!!!', global_schema_field
+                #print 'FOUND SOURCE FOUND ITEM!!!', global_schema_field
                 Global_schema_Field_URI = in_metadata_mappings[global_schema_field]
                 #print 'FOUND SOURCE FOUND ITEM!!!' + global_schema_field + '------->' + Global_schema_Field_URI
     #print Global_schema_Field_URI
@@ -172,6 +175,71 @@ def HTTP_API_SOURCE_request_film_info(in_film_to_search, in_source, in_metadata_
     # if movie was not found, return empty list    
     return all_triples
     
+def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_mappings, in_metadata_content):
+    print 'FIRING TWITTER'
+    
+    # get information from the source (WEB CONNECTION)
+    twitter_secureLoad_conn = twitter_patternPkg_connector ()
+    print in_source['location']
+    print in_film_to_search
+    
+    
+    # get a lit of Jsons or dictionaries
+    print '\nTWEETER RESPONSE: ..... '
+    json_twitters_movie_result = twitter_secureLoad_conn.getTweetSecureLoad(in_film_to_search)
+        # print json_movie_result
+    
+    #print 'PRINTING TWEET RESTLS IN TWITTER_SOURCE_request_film_info'
+    all_triples = []
+    for i in range(0,len(json_twitters_movie_result)): 
+        #print '-- TWITTER: '+ str(i)
+        tweet_json = json_twitters_movie_result[i]
+        #print tweet_json['tweet_id']
+        #print tweet_json['created_at']
+        #print tweet_json['topic']         # tweet_json['movie_name']
+        #print tweet_json['text']
+        #print len(tweet_json)
+        #print '\n'  
+
+        # get mapping (source_field_name -> global_schema_field_name)            
+        #print 'MAPPING WITH METADATA: ..... (TWITTER_SOURCE_request_film_info)'
+        
+        for source_item in tweet_json:
+            #print '\n-- -- TWITTER: '+ str(i) + ' - Accessing each secton in 1 tweeter'
+            #print 'Source Item Name:  ', source_item
+            #print 'Source Item Value: ', tweet_json[source_item]
+            
+            source_item_value = tweet_json[source_item]
+            
+            property_URI = sourceField_2_globalSchemaURI(source_item, in_source['source_name'], in_metadata_mappings, in_metadata_content)
+            #print 'property URI was: '+ property_URI
+            #print in_film_to_search
+            
+            if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:     
+                # build single tripple and append it with the others
+                single_triple = []
+                film_URI = in_film_to_search.replace(' ', '_') # URI crashes in SPARQL is blanks exist
+                film_URI += '_' + in_source['source_name']
+                single_triple.append(film_URI)
+                single_triple.append(property_URI)
+                single_triple.append(source_item_value)
+                all_triples.append(single_triple)
+                # all_triples contains all triples (each is lists of 3 elements) from the HTTP source
+        
+        #print '\nPRINTING ALL RESULTING TRIPLES'
+        #print all_triples    
+                               
+    #print all_triples[1]
+    #for i in range(0,len(all_triples)): 
+    #    print all_triples[i][0] + ' - ' + all_triples[i][1] + ' - ' + all_triples[i][2]
+
+    # if movie was not found, return empty list    
+    return all_triples
+        
+    
+
+
+    
 def print_movie_triples(in_film_all_triples):
     print 'PRINTING ALL RESULTING TRIPLES'
     print in_film_all_triples                           
@@ -199,12 +267,13 @@ def JAIME_wants_to_load_his_file_with_100_films(metadata_mappings, metadata_cont
     f_1stload_movie = codecs.open(f_movie_1stload_name, "r", "utf-8")
     film_to_search = f_1stload_movie.readline()
     film_to_search = film_to_search[0: (len(film_to_search) -2)] # get rid of \r\n
+    print 'READING FROM FILE: ' + film_to_search    
         
     while film_to_search != '':    
-        film_to_search = film_to_search[0: (len(film_to_search) -2)] # get rid of \r\n
-        print '\n\n- Searching Movie: ' + film_to_search + '\n'
+        #film_to_search = film_to_search[0: (len(film_to_search) -2)] # get rid of \r\n
         for source in metadata_content:
             if source['query_type'] == 'HTTP_API_request' :            # this is basically omdb
+                print '\n\nHTTP_API_request (' + source['source_name'] +'): ....................\n\n'
                 # get all triples from film in source
                 film_all_triples = []
                 film_all_triples = HTTP_API_SOURCE_request_film_info(film_to_search, source, metadata_mappings, metadata_content)
@@ -215,8 +284,25 @@ def JAIME_wants_to_load_his_file_with_100_films(metadata_mappings, metadata_cont
                 else:
                     print_film_not_found(film_to_search, source['source_name'])
         
+            if (source['query_type']) == 'TWITTER_Topic':
+                print '\n\nTWITTER RESPONSE: ..................................................\n\n'
+                # get all triples from film in source
+                film_all_triples = []
+                film_all_triples = TWITTER_SOURCE_request_film_info(film_to_search, source, metadata_mappings, metadata_content)
+                #print 'LONGITUD: ' +  str(len(film_all_triples))
+                #print 'ALL TWITTER TRIPPLES: ' + str(film_all_triples)
+                if len(film_all_triples) > 0:
+                    # print_movie_triples(film_all_triples)
+                    # load into virtuoso
+                    virtuoso_conn.insert_triples_movie_info (film_to_search, film_all_triples, RDF_GRAPH_RECOMMENDER, source['source_name'])
+                else:
+                    print_film_not_found(film_to_search, source['source_name'])
+                 
+                    
         film_to_search = f_1stload_movie.readline()
-
+        film_to_search = film_to_search[0: (len(film_to_search) -2)] # get rid of \r\n
+        print '\n\nREADING FROM FILE: ' + film_to_search    
+    
 
 
 
@@ -255,8 +341,9 @@ def main():
     # Name of movie to get information
     
     print '\n' + '*'*40
-    film_to_search = '1941'
-                        # film_to_search = 'Ni de conia la encuentro'
+                        #film_to_search = 'Star Trek'
+    film_to_search = 'War of the Worlds'
+                        #film_to_search = 'Ni de conia la encuentro'
                         ######## chindler's list WILL FAIL!!!!   ########
     print 'FILM TO SEARCH: ' + film_to_search
     print '*'*40
@@ -272,6 +359,7 @@ def main():
     # search that film in ALL SOURCES
     for source in metadata_content:
         if source['query_type'] == 'HTTP_API_request' :            # this is basically omdb
+            print '\n\nHTTP_API_request (' + source['source_name'] +'): ....................\n\n'
             # get all triples from film in source
             film_all_triples = []
             film_all_triples = HTTP_API_SOURCE_request_film_info(film_to_search, source, metadata_mappings, metadata_content)
@@ -283,33 +371,42 @@ def main():
                 print_film_not_found(film_to_search, source['source_name'])
 
         if (source['query_type']) == 'TWITTER_Topic':
-            print 'TWITTER RESPONSE: .....            (To be implemented)'
-            # IMPLEMENT THIS
+            print '\n\nTWITTER RESPONSE: ..................................................\n\n'
+            # get all triples from film in source
+            film_all_triples = []
+            film_all_triples = TWITTER_SOURCE_request_film_info(film_to_search, source, metadata_mappings, metadata_content)
+            #print 'ALL TWITTER TRIPPLES: ' + str(film_all_triples)
+            if len(film_all_triples) > 0:
+                # print_movie_triples(film_all_triples)
+                # load into virtuoso
+                virtuoso_conn.insert_triples_movie_info (film_to_search, film_all_triples, RDF_GRAPH_RECOMMENDER, source['source_name'])
+            else:
+                print_film_not_found(film_to_search, source['source_name'])
             
         if (source['query_type']) == 'SQL':
-            print 'MOVIELENS RESPONSE: .....          (To be implemented)'
+            print '\n\nMOVIELENS RESPONSE: ........................     (To be implemented)\n\n'
             # IMPLEMENT THIS
             
         if (source['query_type']) == 'SPARQL':
-            print 'DBPEDIA RESPONSE: .....            (To be implemented)'
+            print '\n\nDBPEDIA RESPONSE: ..........................     (To be implemented)\n\n'
             # IMPLEMENT THIS
             
         if (source['query_type']) == 'HTTP_request':
-            print 'GOOGLE SHOWTIMES RESPONSE: .....   (To be implemented)'
+            print '\n\nGOOGLE SHOWTIMES RESPONSE: ...................   (To be implemented)\n\n'
             # IMPLEMENT THIS
             
 
-    print 'FINISHED ALL SEARCHES: ' + film_to_search
+    print '\n\n #################### FINISHED ALL SEARCHES: ' + film_to_search
     
-    
+
     ##########################################################################
     # jaime taking 100 movie names, getting all their information from the sources + into virtuoso
+    
     if 1 == 2:
         # THIS IS JUST FOR JAIME TO TEST BIG LOADS into virtuoso
         JAIME_wants_to_load_his_file_with_100_films(metadata_mappings, metadata_content)
 
 
-    ################################################## JAIME END 
-
+    
 if __name__ == '__main__':
     main()
