@@ -13,7 +13,7 @@ import sys
 import os
 import codecs
 import logging
-
+import sparql
     
 
 from connectors.http_api_request.http_api_request_connector import http_api_request_connector
@@ -366,9 +366,11 @@ def main():
     print '\n' + '*'*40
     print 'URIs / NAMES FOUND:'
     print '*'*40     
-    for result in results["results"]["bindings"]:
-        print(result["uri"]["value"] + " / " + result["name"]["value"] )
 
+    for row in results:
+        print 'row:', row
+        values = sparql.unpack_row(row)
+        print values[0], "-", values[1]
     ##########################################################################
     # start searching in all sources 1 MOVIE
     

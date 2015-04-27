@@ -5,7 +5,7 @@ Created on 14/04/2015
 '''
 
 import sys, getopt
-from SPARQLWrapper import SPARQLWrapper, JSON, RDF
+import sparql 
 
 class DBpedia(object):
     '''
@@ -19,8 +19,8 @@ class DBpedia(object):
         '''
         
     def getURI(self, name):
-        sparql = SPARQLWrapper("http://dbpedia.org/sparql")   
-        sparql.setQuery("""
+        
+        q = ("""
             PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             PREFIX schema: <http://schema.org/>
             SELECT DISTINCT ?uri ?name WHERE {
@@ -28,22 +28,7 @@ class DBpedia(object):
                 ?uri foaf:name ?name . 
                 FILTER regex(?name, '""" +  name + """')
             }
-            """)
-        
-        sparql.setReturnFormat(JSON)
-        results = sparql.query().convert()
-        
-        return results
-        
-    def getProperty(self, uri):
-        sparql = SPARQLWrapper("http://dbpedia.org/sparql")   
-        sparql.setQuery("""
-            PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
-            SELECT * 
-            WHERE {
-               <""" + uri + """> ?p ?o .
-            }
-            """)
-        results = sparql.query()
- 
+        """)
+        results = sparql.query('http://dbpedia.org/sparql', q)
+                
         return results
