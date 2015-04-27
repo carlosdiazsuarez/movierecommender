@@ -23,7 +23,7 @@ class DBpedia(object):
         sparql.setQuery("""
             PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             PREFIX schema: <http://schema.org/>
-            SELECT DISTINCT ?uri WHERE {
+            SELECT DISTINCT ?uri ?name WHERE {
                 ?uri a schema:Movie .
                 ?uri foaf:name ?name . 
                 FILTER regex(?name, '""" +  name + """')

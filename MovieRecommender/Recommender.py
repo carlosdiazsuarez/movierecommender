@@ -361,13 +361,13 @@ def main():
 
     # This will use the name of the movie provided by the user
     # to get all the possible URIs that match.
-    all_triples = SPARQL_SOURCE_request_movie_uris(film_to_search)
+    results = SPARQL_SOURCE_request_movie_uris(film_to_search)
 
     print '\n' + '*'*40
-    print 'URIs FOUND:'
+    print 'URIs / NAMES FOUND:'
     print '*'*40     
-    for triple in all_triples["results"]["bindings"]:
-        print(triple["uri"]["value"])
+    for result in results["results"]["bindings"]:
+        print(result["uri"]["value"] + " / " + result["name"]["value"] )
 
     ##########################################################################
     # start searching in all sources 1 MOVIE
