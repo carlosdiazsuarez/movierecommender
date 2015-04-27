@@ -12,6 +12,7 @@ from xml.dom import minidom
 import sys
 import os
 import codecs
+import logging
 
     
 
@@ -20,6 +21,7 @@ from connectors.virtuoso.virtuoso_connector import virtuoso_connector
 
 from connectors.twitter.twitter_patternPkg_connector import twitter_patternPkg_connector
 from connectors.twitter.twitter_streaming_connector import twitter_streaming_connector
+from connectors.dbpedia.DBpedia import DBpedia
 
 
 # does the mapping global concept with uris
@@ -39,7 +41,7 @@ def readMetadata_mappings(metadata_file):
         global_concept_uri = re.sub(r'\s+', '', global_concept_uri)                                                
         global_concept_mappings_dict[global_concept_name] =  global_concept_uri
     #print global_concept_mappings_dict
-    #print json.dumps(global_concept_mappings_dict, indent=2)
+    #print json.dumDESAps(global_concept_mappings_dict, indent=2)
 
     print json.dumps(global_concept_mappings_dict, indent=2)
     print 'Mappings done'
@@ -237,7 +239,16 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
     return all_triples
         
     
-
+def SPARQL_SOURCE_request_movie_uris(in_film_to_search):
+    #print '------ SOURCE NAME:         ', in_source['source_name']
+    #print '       SOURCE LOCATION:     ', in_source['location']    
+    #print '       SOURCE QUERY TYPE:   ', in_source['query_type']
+    #print '       SOURCE ATTRIBUTES:   ', in_source['attributes']
+    
+    dbpedia = DBpedia();
+    all_triples = dbpedia.getURI(in_film_to_search)            
+    
+    return all_triples
 
     
 def print_movie_triples(in_film_all_triples):
@@ -348,6 +359,16 @@ def main():
     print 'FILM TO SEARCH: ' + film_to_search
     print '*'*40
 
+    # This will use the name of the movie provided by the user
+    # to get all the possible URIs that match.
+    all_triples = SPARQL_SOURCE_request_movie_uris(film_to_search)
+
+    print '\n' + '*'*40
+    print 'URIs FOUND:'
+    print '*'*40     
+    for triple in all_triples["results"]["bindings"]:
+        print(triple["uri"]["value"])
+
     ##########################################################################
     # start searching in all sources 1 MOVIE
     
@@ -388,7 +409,7 @@ def main():
             # IMPLEMENT THIS
             
         if (source['query_type']) == 'SPARQL':
-            print '\n\nDBPEDIA RESPONSE: ..........................     (To be implemented)\n\n'
+            print '\n\DBPEDIA RESPONSE: ...................   (To be implemented)\n\n'
             # IMPLEMENT THIS
             
         if (source['query_type']) == 'HTTP_request':
@@ -409,4 +430,5 @@ def main():
 
     
 if __name__ == '__main__':
+    logging.basicConfig()
     main()
