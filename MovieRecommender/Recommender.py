@@ -7,14 +7,14 @@ Created on 14/04/2015
 import re, math
 import string
 import json
-from collections import Counter
-from xml.dom import minidom
 import sys
 import os
 import codecs
 import logging
 import sparql
-    
+
+from collections import Counter
+from xml.dom import minidom
 
 from connectors.http_api_request.http_api_request_connector import http_api_request_connector
 from connectors.virtuoso.virtuoso_connector import virtuoso_connector
@@ -22,7 +22,7 @@ from connectors.virtuoso.virtuoso_connector import virtuoso_connector
 from connectors.twitter.twitter_patternPkg_connector import twitter_patternPkg_connector
 from connectors.twitter.twitter_streaming_connector import twitter_streaming_connector
 from connectors.dbpedia.DBpedia import DBpedia
-
+from pattern.server import Row
 
 # does the mapping global concept with uris
 def readMetadata_mappings(metadata_file):
@@ -104,7 +104,7 @@ def build_http_api_request_film(in_location, in_title):
     in_title = parse_movieName_http_api(in_title)
     #return 'http://www.omdbapi.com/?t=' + in_title + '&y=' + p_year + '&plot=full' +  '&r=json'            #+ '&type=movie'
     return in_location + '/?t=' + in_title + '&y=' + p_year + '&plot=full' +  '&r=json'            #+ '&type=movie'
-        
+      
 def sourceField_2_globalSchemaURI(in_source_item, in_source_name, in_metadata_mappings, in_metadata_content):
     Global_schema_Field_URI = SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA
     #print in_source_item
@@ -237,20 +237,32 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
 
     # if movie was not found, return empty list    
     return all_triples
-        
-    
-def SPARQL_SOURCE_request_movie_uris(in_film_to_search):
-    #print '------ SOURCE NAME:         ', in_source['source_name']
-    #print '       SOURCE LOCATION:     ', in_source['location']    
-    #print '       SOURCE QUERY TYPE:   ', in_source['query_type']
-    #print '       SOURCE ATTRIBUTES:   ', in_source['attributes']
-    
-    dbpedia = DBpedia();
-    all_triples = dbpedia.getURI(in_film_to_search)            
-    
-    return all_triples
 
+
+def DBPEDIA_SOURCE_request_film_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
     
+    dbpedia = DBpedia()
+        
+    triples = []
+    result = dbpedia.getResource(in_movie_uri)        
+    for row in result:
+        
+            source_item = row[0].value
+                                    
+            property_URI = sourceField_2_globalSchemaURI(source_item, in_source['source_name'], in_metadata_mappings, in_metadata_content)
+            
+            if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
+                source_item_value = row[1].value     
+                single_triple = []
+                single_triple.append(in_movie_uri)
+                single_triple.append(property_URI)
+                single_triple.append(source_item_value)
+                triples.append(single_triple)
+            
+    return triples
+
+        
+       
 def print_movie_triples(in_film_all_triples):
     print 'PRINTING ALL RESULTING TRIPLES'
     print in_film_all_triples                           
@@ -319,7 +331,7 @@ def JAIME_wants_to_load_his_file_with_100_films(metadata_mappings, metadata_cont
 
         
 def main():
-
+    
     ##########################################################################
     # global variables
     
@@ -327,6 +339,8 @@ def main():
     global SPARQL_ENDPOINT
     global RDF_GRAPH_RECOMMENDER
     global virtuoso_conn
+    global dbpedia 
+    global dbpedia_results
     
     ##########################################################################
     # initialize variables
@@ -352,25 +366,24 @@ def main():
     # Name of movie to get information
     
     print '\n' + '*'*40
-                        #film_to_search = 'Star Trek'
     film_to_search = 'War of the Worlds'
-                        #film_to_search = 'Ni de conia la encuentro'
-                        ######## chindler's list WILL FAIL!!!!   ########
+    
     print 'FILM TO SEARCH: ' + film_to_search
     print '*'*40
 
     # This will use the name of the movie provided by the user
-    # to get all the possible URIs that match.
-    results = SPARQL_SOURCE_request_movie_uris(film_to_search)
-
+    # to get all the dbpedia_resultspossible URIs that match.
+    dbpedia = DBpedia()
+    dbpedia_results = dbpedia.getURIs(film_to_search)  
+    
     print '\n' + '*'*40
     print 'URIs / NAMES FOUND:'
     print '*'*40     
 
-    for row in results:
-        print 'row:', row
-        values = sparql.unpack_row(row)
-        print values[0], "-", values[1]
+    #for row in dbpedia_results:
+    #    print 'row:', row
+    #    values = sparql.unpack_row(row)
+    #    print values[0], "-", values[1]
     ##########################################################################
     # start searching in all sources 1 MOVIE
     
@@ -411,8 +424,22 @@ def main():
             # IMPLEMENT THIS
             
         if (source['query_type']) == 'SPARQL':
-            print '\n\DBPEDIA RESPONSE: ...................   (To be implemented)\n\n'
-            # IMPLEMENT THIS
+            print '\n\nDBPEDIA RESPONSE: ........................     \n\n'
+            for movie in dbpedia_results:                       
+                values = sparql.unpack_row(movie)
+                movie_uri = values[0]
+                movie_name = values[1]
+                
+                # get all triples from film in source
+                movie_triples = []
+                movie_triples = DBPEDIA_SOURCE_request_film_info(movie_uri, source, metadata_mappings, metadata_content)
+                if len(movie_triples) > 0:
+                    # print_movie_triples(film_all_triples)
+                    # load into virtuoso
+                    virtuoso_conn.insert_triples_movie_info (movie_uri, movie_triples, RDF_GRAPH_RECOMMENDER, source['source_name'])
+                else:
+                    print_film_not_found(movie_name, source['source_name'])
+                                                
             
         if (source['query_type']) == 'HTTP_request':
             print '\n\nGOOGLE SHOWTIMES RESPONSE: ...................   (To be implemented)\n\n'

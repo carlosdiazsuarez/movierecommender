@@ -54,22 +54,19 @@
 			<location> http://dbpedia.org/page/ </location>	
 			<query_type> SPARQL </query_type>	
 			<attributes>
-				<attr_property name ="movie_name"> name </attr_property>	
-				<attr_property name ="movie_desc"> description </attr_property>	
-				<attr_property name ="movie_genre"> genre </attr_property>	
-				<attr_property name ="movie_director"> director </attr_property>	
-				<attr_property name ="movie_author"> author </attr_property>	
-				<attr_property name ="movie_actor"> actor </attr_property>	
-				<attr_property name ="movie_year"> copyrightYear </attr_property>	
-				<attr_property name ="movie_runtime"> duration </attr_property>	
-				<attr_property name ="movie_studio"> productionCompany </attr_property>	
-				<attr_property name ="movie_language"> inLanguage </attr_property>	
-				<attr_property name ="movie_country"> Country </attr_property>	
-				<attr_property name ="movie_budget"> budget </attr_property>	
-				<attr_property name ="movie_comment"> comment </attr_property>	
-				<attr_property name ="movie_awards"> award </attr_property>	
-				<attr_property name ="movie_rating"> aggregateRating </attr_property>	
-				<attr_property name ="movie_poster"> image </attr_property>
+				<attr_property name ="movie_director"> http://dbpedia.org/ontology/director </attr_property>
+				<!-- 
+				<attr_property name ="movie_name"> http://xmlns.com/foaf/0.1/name </attr_property>					 
+				<attr_property name ="movie_desc"> http://dbpedia.org/ontology/abstract </attr_property>	
+				<attr_property name ="movie_director"> http://dbpedia.org/ontology/director </attr_property>	
+				<attr_property name ="movie_author"> http://dbpedia.org/ontology/writer </attr_property>	
+				<attr_property name ="movie_actor"> http://dbpedia.org/ontology/starring </attr_property>	
+				<attr_property name ="movie_year"> http://dbpedia.org/ontology/releaseDate	 </attr_property>	
+				<attr_property name ="movie_runtime"> http://dbpedia.org/ontology/runtime </attr_property>	
+				<attr_property name ="movie_studio"> http://dbpedia.org/property/distributor </attr_property>	
+				<attr_property name ="movie_language"> http://dbpedia.org/property/language </attr_property>	
+				<attr_property name ="movie_budget"> http://dbpedia.org/ontology/budget </attr_property>
+				-->	
 			</attributes>
 		</source_name>
 		<source_name name ="TWITTER_source">

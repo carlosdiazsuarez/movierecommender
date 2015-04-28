@@ -12,14 +12,12 @@ class DBpedia(object):
     classdocs
     '''
 
-
     def __init__(self):
         '''
         Constructor
         '''
         
-    def getURI(self, name):
-        
+    def getURIs(self, name):        
         q = ("""
             PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             PREFIX schema: <http://schema.org/>
@@ -32,3 +30,15 @@ class DBpedia(object):
         results = sparql.query('http://dbpedia.org/sparql', q)
                 
         return results
+    
+    def getResource(self, uri):
+        q = ("""
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            PREFIX schema: <http://schema.org/>
+            SELECT ?p ?o WHERE {
+                <""" + uri + """> ?p ?o .
+            }
+        """)
+        result = sparql.query('http://dbpedia.org/sparql', q)
+                
+        return result
