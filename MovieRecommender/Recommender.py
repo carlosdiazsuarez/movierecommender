@@ -147,13 +147,13 @@ def HTTP_API_SOURCE_request_film_info(in_film_to_search, in_source, in_metadata_
     request_string = build_http_api_request_film(in_source['location'], in_film_to_search)
     print request_string
     json_movie_result = http_api_conn.getMovie_Information(request_string)
-    print '\nHTTP_API_request RESPONSE: ..... '
+    #print '\nHTTP_API_request RESPONSE: ..... '
         # print json_movie_result
     #print json.dumps(json_movie_result, indent=2)
 
 
     # get mapping (source_field_name -> global_schema_field_name)            
-    print '\nMAPPING WITH METADATA: ..... '
+    #print '\nMAPPING WITH METADATA: ..... '
     all_triples = []
     for source_item in json_movie_result:
         #print 'Source Item Name:  ', source_item
@@ -190,7 +190,7 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
     
     
     # get a lit of Jsons or dictionaries
-    print '\nTWEETER RESPONSE: ..... '
+    print '\nTWEETER RESPONSE: ... '
     json_twitters_movie_result = twitter_secureLoad_conn.getTweetSecureLoad(in_film_to_search)
         # print json_movie_result
     
@@ -274,9 +274,14 @@ def print_movie_triples(in_film_all_triples):
         print in_film_all_triples[i][0] + ' - ' + in_film_all_triples[i][1] + ' - ' + in_film_all_triples[i][2]
     
 def print_film_not_found(in_film_to_search, in_source_name):
-    print '\n' + '*'*40
+    #print '\n' + '*'*40
     print 'FILM not found in source: (FILM: ' + in_film_to_search + ', SOURCE: ' + in_source_name +')'
-    print '*'*40
+    #print '*'*40
+    
+def print_metadata_not_found(in_film_to_search, in_source_name):
+    #print '\n' + '*'*40
+    print 'METADATA not found in source: (FILM: ' + in_film_to_search + ', SOURCE: ' + in_source_name +')'
+    #print '*'*40    
  
 def JAIME_wants_to_load_his_file_with_100_films(metadata_mappings, metadata_content):
     print '\n\n\n' + '*'*40
@@ -392,14 +397,16 @@ def main():
     # start searching in all sources 1 MOVIE
     
     print '\n' + '*'*40
-    print 'FILM SEARCHING (according to METADATA).... '
+    print 'STARTING TO LOAD DATA (according to METADATA)... '
     print '*'*40
     
     
     # search that film in ALL SOURCES
     for source in metadata_content:
         if source['query_type'] == 'HTTP_API_request' :            # this is basically omdb
-            print '\n\nHTTP_API_request (' + source['source_name'] +'): ....................\n\n'
+            print '\n' + '*'*40
+            print 'HTTP API request (' + source['source_name'] +'): ...'
+            print '*'*40
             # get all triples from film in source
             film_all_triples = []
             film_all_triples = HTTP_API_SOURCE_request_film_info(film_to_search, source, metadata_mappings, metadata_content)
@@ -411,7 +418,9 @@ def main():
                 print_film_not_found(film_to_search, source['source_name'])
 
         if (source['query_type']) == 'TWITTER_Topic':
-            print '\n\nTWITTER RESPONSE: ..................................................\n\n'
+            print '\n' + '*'*40
+            print 'TWITTER request (' + source['source_name'] +'): ...'
+            print '*'*40
             # get all triples from film in source
             film_all_triples = []
             film_all_triples = TWITTER_SOURCE_request_film_info(film_to_search, source, metadata_mappings, metadata_content)
@@ -424,11 +433,15 @@ def main():
                 print_film_not_found(film_to_search, source['source_name'])
             
         if (source['query_type']) == 'SQL':
-            print '\n\nMOVIELENS RESPONSE: ........................     (To be implemented)\n\n'
+            print '\n' + '*'*40
+            print 'MOVIELENS request (' + source['source_name'] +'): ... (To be implemented)'
+            print '*'*40
             # IMPLEMENT THIS
             
         if (source['query_type']) == 'SPARQL':
-            print '\n\nDBPEDIA RESPONSE: ........................     \n\n'
+            print '\n' + '*'*40
+            print 'SPARQL request (' + source['source_name'] +'): ...'
+            print '*'*40
             for movie in movies:                       
                 movie_uri = movie[0]
                 movie_name = movie[1]
@@ -441,15 +454,18 @@ def main():
                     # load into virtuoso
                     virtuoso_conn.insert_triples_movie_info (movie_uri, movie_triples, RDF_GRAPH_RECOMMENDER, source['source_name'])
                 else:
-                    print_film_not_found(movie_name, source['source_name'])
+                    print_metadata_not_found(movie_name, source['source_name'])
                                                 
             
         if (source['query_type']) == 'HTTP_request':
-            print '\n\nGOOGLE SHOWTIMES RESPONSE: ...................   (To be implemented)\n\n'
+            print '\n' + '*'*40
+            print 'GOOGLE MOVIE SHOWTIMES request (' + source['source_name'] +'): ... (To be implemented)'
+            print '*'*40
             # IMPLEMENT THIS
             
-
-    print '\n\n #################### FINISHED ALL SEARCHES: ' + film_to_search
+    print '\n' + '*'*40
+    print 'DATA LOAD FINISHED FOR: ' + film_to_search
+    print '*'*40
     
 
     ##########################################################################

@@ -79,16 +79,16 @@ class virtuoso_connector(object):
             #print data
             #print json.dumps(data, indent= 2, separators=(',',':'))
             
-            print '\n' + '*'*40
+            #print '\n' + '*'*40
             print 'VIRTUOSO insert_triples_movie_info SUCCESSFULLY: (film: ' + in_film_name +') ('+ in_source_name + ')'
-            print '*'*40
+            #print '*'*40
 
             
         except Exception as e:
             print e
-            print '\n' + '*'*40
+            #print '\n' + '*'*40
             print 'VIRTUOSO insert_triples_movie_info FAILED!!!!!!: (film: ' + in_film_name +') ('+ in_source_name + ')'
-            print '*'*40
+            #print '*'*40
             pass
         
         
