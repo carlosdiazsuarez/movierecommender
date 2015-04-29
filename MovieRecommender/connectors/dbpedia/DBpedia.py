@@ -25,6 +25,7 @@ class DBpedia(object):
                 ?uri a schema:Movie .
                 ?uri foaf:name ?name . 
                 FILTER regex(?name, '""" +  name + """')
+                FILTER (langMatches(lang(?name),"en"))
             }
         """)
         results = sparql.query('http://dbpedia.org/sparql', q)
@@ -37,6 +38,7 @@ class DBpedia(object):
             PREFIX schema: <http://schema.org/>
             SELECT ?p ?o WHERE {
                 <""" + uri + """> ?p ?o .
+                FILTER (langMatches(lang(?o),"en"))
             }
         """)
         result = sparql.query('http://dbpedia.org/sparql', q)

@@ -55,7 +55,6 @@
 			<query_type> SPARQL </query_type>	
 			<attributes>
 				<attr_property name ="movie_director"> http://dbpedia.org/ontology/director </attr_property>
-				<!-- 
 				<attr_property name ="movie_name"> http://xmlns.com/foaf/0.1/name </attr_property>					 
 				<attr_property name ="movie_desc"> http://dbpedia.org/ontology/abstract </attr_property>	
 				<attr_property name ="movie_director"> http://dbpedia.org/ontology/director </attr_property>	
@@ -66,7 +65,6 @@
 				<attr_property name ="movie_studio"> http://dbpedia.org/property/distributor </attr_property>	
 				<attr_property name ="movie_language"> http://dbpedia.org/property/language </attr_property>	
 				<attr_property name ="movie_budget"> http://dbpedia.org/ontology/budget </attr_property>
-				-->	
 			</attributes>
 		</source_name>
 		<source_name name ="TWITTER_source">

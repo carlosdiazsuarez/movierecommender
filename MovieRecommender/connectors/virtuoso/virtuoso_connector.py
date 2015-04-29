@@ -8,6 +8,7 @@ import urllib2
 #from SPARQLWrapper import SPARQLWrapper, RDF, JSON, POST, SELECT, SPARQLExceptions
 import json
 import sparql
+from sparql import SparqlException
 
 class virtuoso_connector(object):
     '''
@@ -84,11 +85,14 @@ class virtuoso_connector(object):
             #print '*'*40
 
             
-        except Exception as e:
-            print e
+        except sparql.SparqlException as e:
             #print '\n' + '*'*40
             print 'VIRTUOSO insert_triples_movie_info FAILED!!!!!!: (film: ' + in_film_name +') ('+ in_source_name + ')'
             #print '*'*40
+            print 'Exception: '
+            print e
+            print 'Query: '
+            print query
             pass
         
         
