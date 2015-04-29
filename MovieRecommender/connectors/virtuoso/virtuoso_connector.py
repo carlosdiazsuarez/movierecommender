@@ -5,8 +5,9 @@ Created on Apr 14, 2015
 '''
 
 import urllib2
-from SPARQLWrapper import SPARQLWrapper, RDF, JSON, POST, SELECT, SPARQLExceptions
+#from SPARQLWrapper import SPARQLWrapper, RDF, JSON, POST, SELECT, SPARQLExceptions
 import json
+import sparql
 
 class virtuoso_connector(object):
     '''
@@ -23,7 +24,7 @@ class virtuoso_connector(object):
         self.handler=urllib2.HTTPHandler(debuglevel=1)
         self.opener = urllib2.build_opener(self.handler)
         urllib2.install_opener(self.opener)
-        self.sparql = SPARQLWrapper(self.VIRTUOSO_SPARQL_ENDPOINT, returnFormat="json")
+        #self.sparql = SPARQLWrapper(self.VIRTUOSO_SPARQL_ENDPOINT, returnFormat="json")
         
         print '\n' + '*'*40
         print 'VIRTUOSO CONNECTOR REGISTERED (using SPARQLWrapper python package)'
@@ -70,10 +71,11 @@ class virtuoso_connector(object):
         
         # launch
         try:
-            self.sparql.setQuery(query)
-            self.sparql.setMethod(POST)    
-            result = self.sparql.query()
-            data = result.convert()
+            #self.sparql.setQuery(query)
+            #self.sparql.setMethod(POST)    
+            #result = self.sparql.query()
+            result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
+            #data = result.convert()
             #print data
             #print json.dumps(data, indent= 2, separators=(',',':'))
             
@@ -82,9 +84,9 @@ class virtuoso_connector(object):
             print '*'*40
 
             
-        except SPARQLExceptions.QueryBadFormed:
+        except Exception as e:
+            print e
             print '\n' + '*'*40
-            print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - SPARQLExceptions.QueryBadFormed'
             print 'VIRTUOSO insert_triples_movie_info FAILED!!!!!!: (film: ' + in_film_name +') ('+ in_source_name + ')'
             print '*'*40
             pass
