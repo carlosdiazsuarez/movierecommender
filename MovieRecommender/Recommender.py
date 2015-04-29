@@ -44,7 +44,7 @@ def readMetadata_mappings(metadata_file):
     #print json.dumDESAps(global_concept_mappings_dict, indent=2)
 
     print json.dumps(global_concept_mappings_dict, indent=2)
-    print 'Mappings done'
+
     return global_concept_mappings_dict
     
 
@@ -58,7 +58,7 @@ def readMetadata_sources(metadata_file):
     print '*'*40
     workingDir=os.getcwd()
     print 'Working Dir: ', workingDir
-    print 'Full Path Metadata File: ' + workingDir + '\\' + metadata_file
+    print 'Full Path Metadata File: ' + workingDir + '/' + metadata_file
     xmldoc = minidom.parse(metadata_file)    
     data_sources = xmldoc.getElementsByTagName('source_name') 
 
@@ -90,7 +90,11 @@ def readMetadata_sources(metadata_file):
             source_dict['attributes'] =  attributes
         sources_all.append(source_dict)
     
-    print sources_all
+    # Print the sources 
+    print 'Sources: '
+    for source in sources_all:
+        print json.dumps(source, indent=2)
+        
     return sources_all   
         
 def parse_movieName_http_api(in_title):
@@ -167,7 +171,6 @@ def HTTP_API_SOURCE_request_film_info(in_film_to_search, in_source, in_metadata_
             single_triple.append(source_item_value)
             all_triples.append(single_triple)
             # all_triples contains all triples (each is lists of 3 elements) from the HTTP source
-    
     #print 'PRINTING ALL RESULTING TRIPLES'
     #print all_triples                           
     #print all_triples[1]
@@ -340,8 +343,7 @@ def main():
     global RDF_GRAPH_RECOMMENDER
     global virtuoso_conn
     global dbpedia 
-    global dbpedia_results
-    
+   
     ##########################################################################
     # initialize variables
     
@@ -351,10 +353,10 @@ def main():
     metadata_content  = [] # list of dictionaries
     metadata_mappings = {} # dictionary with mappings of global concept with URI
     RDF_GRAPH_RECOMMENDER = 'OD_RDF_Graph_Recommender' 
+    movies = [] # list of movies
     
     ##########################################################################
     # read metadata
-    
     metadata_content = readMetadata_sources(METADATA)
     metadata_mappings = readMetadata_mappings(METADATA)
 
@@ -363,11 +365,9 @@ def main():
     virtuoso_conn = virtuoso_connector()
 
     ##########################################################################
-    # Name of movie to get information
-    
+    # Name of movie to get information    
     print '\n' + '*'*40
-    film_to_search = 'War of the Worlds'
-    
+    film_to_search = 'War of the Worlds'    
     print 'FILM TO SEARCH: ' + film_to_search
     print '*'*40
 
@@ -377,13 +377,17 @@ def main():
     dbpedia_results = dbpedia.getURIs(film_to_search)  
     
     print '\n' + '*'*40
-    print 'URIs / NAMES FOUND:'
+    print 'URIs / NAMES FOUND ON DBPEDIA:'
     print '*'*40     
 
-    #for row in dbpedia_results:
-    #    print 'row:', row
-    #    values = sparql.unpack_row(row)
-    #    print values[0], "-", values[1]
+    for row in dbpedia_results:
+        values = sparql.unpack_row(row)
+        movies.append((values[0], values[1]))
+        
+    for movie in movies:                       
+        print 'URI: ' + movie[0]
+        print 'Name: ' + movie[1]
+        
     ##########################################################################
     # start searching in all sources 1 MOVIE
     
@@ -425,10 +429,9 @@ def main():
             
         if (source['query_type']) == 'SPARQL':
             print '\n\nDBPEDIA RESPONSE: ........................     \n\n'
-            for movie in dbpedia_results:                       
-                values = sparql.unpack_row(movie)
-                movie_uri = values[0]
-                movie_name = values[1]
+            for movie in movies:                       
+                movie_uri = movie[0]
+                movie_name = movie[1]
                 
                 # get all triples from film in source
                 movie_triples = []

@@ -27,7 +27,7 @@ class virtuoso_connector(object):
         #self.sparql = SPARQLWrapper(self.VIRTUOSO_SPARQL_ENDPOINT, returnFormat="json")
         
         print '\n' + '*'*40
-        print 'VIRTUOSO CONNECTOR REGISTERED (using SPARQLWrapper python package)'
+        print 'VIRTUOSO CONNECTOR REGISTERED (using https://pypi.python.org/pypi/sparql-client/ python package)'
         print '*'*40
         
     def insert_triples_movie_info(self, in_film_name, in_triples_lists, in_RDFgraph, in_source_name):
