@@ -4,25 +4,26 @@ Created on 14/04/2015
 @author: cdiaz jandres
 '''
 
-import re, math
-import string
-import json
-import sys
-import os
 import codecs
-import logging
-import sparql
-
 from collections import Counter
+import json
+import logging
+import os
+from pattern.server import Row
+import re, math
+import sparql
+import string
+import sys
 from xml.dom import minidom
 
+from connectors.dbpedia.DBpedia import DBpedia
+from connectors.googlemoviesshowtimes.gms_connector import GoogleMovieShowtimes
 from connectors.http_api_request.http_api_request_connector import http_api_request_connector
-from connectors.virtuoso.virtuoso_connector import virtuoso_connector
-
 from connectors.twitter.twitter_patternPkg_connector import twitter_patternPkg_connector
 from connectors.twitter.twitter_streaming_connector import twitter_streaming_connector
-from connectors.dbpedia.DBpedia import DBpedia
-from pattern.server import Row
+from connectors.virtuoso.virtuoso_connector import VirtuosoConnector
+
+SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA= 'SOURCE ITEM NOT EXISTING IN GLOBAL SCHEMA'
 
 # does the mapping global concept with uris
 def readMetadata_mappings(metadata_file):
@@ -241,6 +242,68 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
     # if movie was not found, return empty list    
     return all_triples
 
+def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings, in_metadata_content):
+    
+    print '\n' + '*'*40    
+    print 'GMS_SOURCE_request_movies_info'
+    print '*'*40    
+    
+    gmsConnector = GoogleMovieShowtimes(in_city_name)
+    triples = []
+        
+    results = gmsConnector.parse()
+    
+    for k, v in results.iteritems():
+        for theater in v:
+            property_URI = sourceField_2_globalSchemaURI(k, in_source['source_name'], in_metadata_mappings, in_metadata_content)
+            if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
+                triple = []            
+                triple.append(theater['name'].replace(' ', '_'))
+                triple.append("rdf:type")
+                triple.append(property_URI)
+                triples.append(triple)
+                print triple                            
+            for kt, vt in theater.iteritems():
+                if type(vt) is not list:
+                    property_URI = sourceField_2_globalSchemaURI(kt, in_source['source_name'], in_metadata_mappings, in_metadata_content)
+                    if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
+                        triple = []
+                        triple.append(theater['name'].replace(' ', '_'))
+                        triple.append(property_URI)
+                        triple.append(vt)
+                        triples.append(triple)
+                        print triple
+                else: 
+                    for movie in vt:
+                        for km, vm in movie.iteritems():
+                            if km == "movieName": 
+                                property_URI = sourceField_2_globalSchemaURI("event", in_source['source_name'], in_metadata_mappings, in_metadata_content)
+                                if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
+                                    triple = []
+                                    triple.append(theater['name'].replace(' ', '_'))
+                                    triple.append(property_URI)
+                                    triple.append(vm.replace(' ', '_'))
+                                    triples.append(triple)                                                                        
+                                    print triple
+                                property_URI = sourceField_2_globalSchemaURI("movieType", in_source['source_name'], in_metadata_mappings, in_metadata_content)
+                                if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
+                                    triple = []                                    
+                                    triple.append(vm.replace(' ', '_'))
+                                    triple.append("rdf:type")
+                                    triple.append(property_URI)
+                                    triples.append(triple)                                    
+                                    print triple
+                                property_URI = sourceField_2_globalSchemaURI("movieName", in_source['source_name'], in_metadata_mappings, in_metadata_content)
+                                if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
+                                    triple = []                                    
+                                    triple.append(vm.replace(' ', '_'))                                    
+                                    triple.append(property_URI)
+                                    triple.append(vm)
+                                    triples.append(triple)                                    
+                                    print triple
+
+    return triples
+
 
 def DBPEDIA_SOURCE_request_film_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
     
@@ -343,7 +406,7 @@ def main():
     ##########################################################################
     # global variables
     
-    global SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA 
+    #global SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA 
     global SPARQL_ENDPOINT
     global RDF_GRAPH_RECOMMENDER
     global virtuoso_conn
@@ -352,7 +415,6 @@ def main():
     ##########################################################################
     # initialize variables
     
-    SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA= 'SOURCE ITEM NOT EXISTING IN GLOBAL SCHEMA'
     SPARQL_ENDPOINT = "http://localhost:8890/sparql"
     METADATA = 'METADATA_recommender.xml'
     metadata_content  = [] # list of dictionaries
@@ -367,7 +429,7 @@ def main():
 
     ##########################################################################
     # initialize virtuoso
-    virtuoso_conn = virtuoso_connector()
+    virtuoso_conn = VirtuosoConnector()
 
     ##########################################################################
     # Name of movie to get information    

@@ -78,9 +78,9 @@ class GoogleMovieShowtimes:
                 index_m = resp['theater'][index]['movies'].index({})
 
                 movie = []                 
-                movie.append(('id', div_movie.div.a.attrs[0][1].split("=")[-1]))                
-                movie.append(('name', div_movie.div.a.contents[0]))
-                movie.append(('info', div_movie.span.contents[0]))
+                movie.append(('movieId', div_movie.div.a.attrs[0][1].split("=")[-1]))                
+                movie.append(('movieName', div_movie.div.a.contents[0]))
+                movie.append(('movieInfo', div_movie.span.contents[0]))
                 movie.append(('times', []))
 
                 resp['theater'][index]['movies'][index_m] = dict(movie)

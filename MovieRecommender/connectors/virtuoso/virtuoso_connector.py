@@ -10,7 +10,7 @@ import json
 import sparql
 from sparql import SparqlException
 
-class virtuoso_connector(object):
+class VirtuosoConnector(object):
     '''
     classdocs
     '''
@@ -30,6 +30,38 @@ class virtuoso_connector(object):
         print '\n' + '*'*40
         print 'VIRTUOSO CONNECTOR REGISTERED (using https://pypi.python.org/pypi/sparql-client/ python package)'
         print '*'*40
+        
+    ''' 
+        A more generic insert function
+    '''    
+    def insert(self, in_triples, in_RDFGraph):
+
+        print '\n' + '*'*40
+        print 'VIRTUOSO CONNECTOR insert'
+        print '*'*40
+        
+        
+        query = 'INSERT IN GRAPH <' + in_RDFGraph +'>\n'        
+        query += '{\n'
+        for triple in in_triples:
+            if "http" in triple[2]:
+                query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> .\n'
+            else: 
+                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2] + '" .\n'
+        query += '}'
+        
+        # launch
+        try:
+            result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
+            print query
+            print "insert succeded,  result: " + result.variables[0]
+            
+        except sparql.SparqlException as e:
+            print 'Exception: '
+            print e
+            print 'Query: '
+            print query
+            pass           
         
     def insert_triples_movie_info(self, in_film_name, in_triples_lists, in_RDFgraph, in_source_name):
         #PARAMETER: in_triples_lists 
