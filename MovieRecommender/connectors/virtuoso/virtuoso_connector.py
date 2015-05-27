@@ -44,7 +44,7 @@ class VirtuosoConnector(object):
             triples = []
             for row in result:
                 values = sparql.unpack_row(row)
-                triples.append([values[0], values[1], values[2].encode("latin_1")])
+                triples.append([values[0], values[1], values[2]])
             return triples
             
         except sparql.SparqlException as e:

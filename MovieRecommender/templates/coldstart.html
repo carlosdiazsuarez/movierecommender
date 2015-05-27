@@ -1,13 +1,25 @@
-$def with (city, triples)
+$def with (city, theaters, movies)
 
 $if city:
     <h1>As you are in <em>$city</em>!!!</h1>    
     <p/>
-    Here you have some movies currently in <em>$city</em>:
+    Here you have some theaters and movies currently in <em>$city</em>:
     <p/>
-	$for triple in triples:
-    	$triple[0] - $triple[2]
-    	<br/>
-
+    <table border="1">
+	$for theater in theaters:
+	    <tr>
+	    <td bgcolor="eeeeee">
+		<b>$theater[2].encode("latin_1")</b>
+		</td>
+		</tr>
+		<tr>
+		<td>
+		$for movie in movies:
+			$if theater[0] == movie[0]: 
+    			<a href="http://localhost:8081/recommendation?movie=$movie[2]">$movie[2].encode("latin_1")</a>
+    			<br/>
+    	</td>
+    	<tr>
+    </table>
 $else:
     Something goes wrong!

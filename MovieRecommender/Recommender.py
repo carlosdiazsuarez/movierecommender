@@ -249,6 +249,54 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
     # if movie was not found, return empty list    
     return all_triples
 
+def VIRTUOSO_request_movie_byName(in_name):        
+    
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_movie_byName'
+    print '*'*40
+    
+    print 'Searching in DBpedia for: ', in_name    
+
+    movies = []
+    triples = []
+    
+    # This will use the name of the movie provided by the user
+    # to get all the dbpedia_resultspossible URIs that match.
+    dbpedia = DBpedia()
+    dbpedia_results = dbpedia.getURIs(in_name)  
+    
+    for row in dbpedia_results:
+        values = sparql.unpack_row(row)
+        movies.append((values[0], values[1]))
+        
+    for movie in movies:                       
+        print 'URI: ' + movie[0]
+        print 'Name: ' + movie[1]
+    
+    return movies
+
+def VIRTUOSO_request_theaters_byCity(in_city_name):
+
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_theaters_byCity'
+    print '*'*40    
+        
+    query = 'SELECT ?s ?p ?o\n'
+    query += 'WHERE {\n'
+    query += '?s ?p ?o .\n'
+    query += '?s <https://schema.org/name> ?o .\n'
+    query += '?s <rdf:type> <https://schema.org/MovieTheater> .\n' 
+    query += '?s <https://schema.org/location> ?address .\n'
+    query += 'FILTER regex(?address, "' + in_city_name + '" )\n'
+    query += '}'
+    
+    print query
+    
+    triples = virtuosoConnector.query(query)
+    
+    return triples
+
+
 def VIRTUOSO_request_movies_byCity(in_city_name):
 
     print '\n' + '*'*40    
@@ -267,6 +315,14 @@ def VIRTUOSO_request_movies_byCity(in_city_name):
     
     triples = virtuosoConnector.query(query)
     
+    #Remove what is not part of the name
+    for triple in triples:
+        triple[2] = triple[2].replace('(Digital)', '')
+        triple[2] = triple[2].replace('(Dig)', '')
+        triple[2] = triple[2].replace('3D', '')
+        triple[2] = triple[2].replace('V.O.S.E.', '')
+        triple[2] = triple[2].replace('V.O.S.', '')
+        
     return triples
     
 
@@ -320,7 +376,7 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
     return result
 
 
-def DBPEDIA_SOURCE_request_film_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
+def DBPEDIA_SOURCE_request_movie_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
     
     dbpedia = DBpedia()
         
@@ -525,7 +581,7 @@ def main():
                 
                 # get all triples from film in source
                 movie_triples = []
-                movie_triples = DBPEDIA_SOURCE_request_film_info(movie_uri, source, metadata_mappings, metadata_content)
+                movie_triples = DBPEDIA_SOURCE_request_movie_info(movie_uri, source, metadata_mappings, metadata_content)
                 if len(movie_triples) > 0:
                     # print_movie_triples(film_all_triples)
                     # load into virtuoso
