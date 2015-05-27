@@ -1,35 +1,13 @@
-$def with (city, gms_resp)
-
-$def tr(values):
-    <tr>
-    <td>
-    $values.pop('name')
-    </td>
-    <td>
-    $values.pop('info')
-    </td>
-   	<tr>
-   	<td>
-   	<ul>    
-    $for movie in values.pop('movies'): <li>$:movie.pop('name')</li>    
-	</ul>        	
-    </td>
-    </tr>
-    </tr>
-
-$def table(rows):
-    <table>
-    $for row in rows:
-        $:row
-    </table>
+$def with (city, triples)
 
 $if city:
     <h1>As you are in <em>$city</em>!!!</h1>    
     <p/>
     Here you have some movies currently in <em>$city</em>:
     <p/>
-	$#gms_resp.pop('theater')
-	$:table([tr(theater) for theater in gms_resp.pop('theater')])    
+	$for triple in triples:
+    	$triple[0] - $triple[2]
+    	<br/>
 
 $else:
     Something goes wrong!

@@ -4,12 +4,15 @@ Created on Apr 14, 2015
 @author: Jaime
 '''
 
-import urllib2
-#from SPARQLWrapper import SPARQLWrapper, RDF, JSON, POST, SELECT, SPARQLExceptions
 import json
-import sparql
+from rdflib.plugins.sparql.algebra import triples
+from rdflib.term import Literal
 from sparql import SparqlException
+import sparql
+import urllib2
 
+
+#from SPARQLWrapper import SPARQLWrapper, RDF, JSON, POST, SELECT, SPARQLExceptions
 class VirtuosoConnector(object):
     '''
     classdocs
@@ -30,6 +33,27 @@ class VirtuosoConnector(object):
         print '\n' + '*'*40
         print 'VIRTUOSO CONNECTOR REGISTERED (using https://pypi.python.org/pypi/sparql-client/ python package)'
         print '*'*40
+        
+    def query(self, query):
+        # launch
+        try:
+            result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
+            print query
+            print "query succeded, result: " + result.variables[0]
+            
+            triples = []
+            for row in result:
+                values = sparql.unpack_row(row)
+                triples.append([values[0], values[1], values[2].encode("latin_1")])
+            return triples
+            
+        except sparql.SparqlException as e:
+            print 'Exception: '
+            print e
+            print 'Query: '
+            print query
+            pass           
+
         
     ''' 
         A more generic insert function
@@ -54,14 +78,15 @@ class VirtuosoConnector(object):
         try:
             result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
             print query
-            print "insert succeded,  result: " + result.variables[0]
+            print "insert succeded, result: " + result.variables[0]
+            return result
             
         except sparql.SparqlException as e:
             print 'Exception: '
             print e
             print 'Query: '
             print query
-            pass           
+            pass
         
     def insert_triples_movie_info(self, in_film_name, in_triples_lists, in_RDFgraph, in_source_name):
         #PARAMETER: in_triples_lists 

@@ -6,10 +6,7 @@ Created on 25/05/2015
 
 import web
 
-from Recommender import readMetadata_sources, readMetadata_mappings, \
-    GMS_SOURCE_request_movies_info
-from connectors.virtuoso.virtuoso_connector import VirtuosoConnector
-
+import Recommender
 
 render = web.template.render('templates/')
 
@@ -25,18 +22,12 @@ SPARQL_ENDPOINT = "http://localhost:8890/sparql"
 METADATA = 'METADATA_recommender.xml'
 metadata_content  = [] # list of dictionaries
 metadata_mappings = {} # dictionary with mappings of global concept with URI
-RDF_GRAPH_RECOMMENDER = 'OD_RDF_Graph_Recommender' 
 
 ##########################################################################
 # read metadata
-metadata_content = readMetadata_sources(METADATA)
-metadata_mappings = readMetadata_mappings(METADATA)
-
-##########################################################################
-# initialize virtuoso
-vConn = VirtuosoConnector()
-
-     
+metadata_content = Recommender.readMetadata_sources(METADATA)
+metadata_mappings = Recommender.readMetadata_mappings(METADATA)
+   
 class index:
     def GET(self):
         return render.index()
@@ -48,9 +39,9 @@ class coldstart:
         triples = []        
         for source in metadata_content:
             if source['source_name'] == source_name:   
-                triples = GMS_SOURCE_request_movies_info(input.city, source, metadata_mappings, metadata_content)
-        vConn.insert(triples, RDF_GRAPH_RECOMMENDER)                
-        return render.coldstart(input.city, triples)                                      
+                Recommender.GMS_SOURCE_request_movies_info(input.city, source, metadata_mappings, metadata_content)
+                triples = Recommender.VIRTUOSO_request_movies_byCity(input.city)
+        return render.coldstart(input.city, triples )                                      
 
 if __name__ == "__main__":       
     app = web.application(urls, globals())

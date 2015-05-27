@@ -86,10 +86,8 @@
 			<attributes>
 				<attr_property name ="theater_type"> theater </attr_property>	
 				<attr_property name ="theater_name"> name </attr_property>	
-				<attr_property name ="theater_location"> info </attr_property>	
-				<attr_property name ="theater_event"> event </attr_property>
-				<attr_property name ="movie_type"> movieType </attr_property>
-				<attr_property name ="movie_name"> movieName </attr_property>
+				<attr_property name ="theater_location"> address </attr_property>				
+				<attr_property name ="theater_event"> movieName </attr_property>
 			</attributes>
 		</source_name>
 		<source_name name ="MOVIELENS_source">

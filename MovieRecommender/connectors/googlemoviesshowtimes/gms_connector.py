@@ -66,7 +66,7 @@ class GoogleMovieShowtimes:
 
             theater = []
             theater.append(('name', div.div.h2.a.contents[0]))
-            theater.append(('info', div.div.div.contents[0]))
+            theater.append(('address', div.div.div.contents[0]))
             theater.append(('movies', []))
 
             resp['theater'][index] = dict(theater)

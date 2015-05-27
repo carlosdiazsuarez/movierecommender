@@ -23,6 +23,13 @@ from connectors.twitter.twitter_patternPkg_connector import twitter_patternPkg_c
 from connectors.twitter.twitter_streaming_connector import twitter_streaming_connector
 from connectors.virtuoso.virtuoso_connector import VirtuosoConnector
 
+
+##########################################################################
+# initialize virtuoso
+RDF_GRAPH_RECOMMENDER = 'OD_RDF_Graph_Recommender' 
+virtuosoConnector = VirtuosoConnector()
+
+
 SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA= 'SOURCE ITEM NOT EXISTING IN GLOBAL SCHEMA'
 
 # does the mapping global concept with uris
@@ -242,6 +249,28 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
     # if movie was not found, return empty list    
     return all_triples
 
+def VIRTUOSO_request_movies_byCity(in_city_name):
+
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_movies_byCity'
+    print '*'*40    
+        
+    query = 'SELECT ?s ?p ?o\n'
+    query += 'WHERE {\n'
+    query += '?s ?p ?o .\n'
+    query += '?s <https://schema.org/event> ?o .\n' 
+    query += '?s <https://schema.org/location> ?address .\n'
+    query += 'FILTER regex(?address, "' + in_city_name + '" )\n'
+    query += '}'
+    
+    print query
+    
+    triples = virtuosoConnector.query(query)
+    
+    return triples
+    
+
+
 def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings, in_metadata_content):
     
     print '\n' + '*'*40    
@@ -254,11 +283,12 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
     results = gmsConnector.parse()
     
     for k, v in results.iteritems():
-        for theater in v:
+        for theater in v:            
+            theaterURI = theater['name'].replace(' ', '_') + "_GMS_source"            
             property_URI = sourceField_2_globalSchemaURI(k, in_source['source_name'], in_metadata_mappings, in_metadata_content)
             if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
                 triple = []            
-                triple.append(theater['name'].replace(' ', '_'))
+                triple.append(theaterURI)
                 triple.append("rdf:type")
                 triple.append(property_URI)
                 triples.append(triple)
@@ -268,41 +298,26 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
                     property_URI = sourceField_2_globalSchemaURI(kt, in_source['source_name'], in_metadata_mappings, in_metadata_content)
                     if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
                         triple = []
-                        triple.append(theater['name'].replace(' ', '_'))
+                        triple.append(theaterURI)
                         triple.append(property_URI)
                         triple.append(vt)
                         triples.append(triple)
                         print triple
                 else: 
                     for movie in vt:
-                        for km, vm in movie.iteritems():
-                            if km == "movieName": 
-                                property_URI = sourceField_2_globalSchemaURI("event", in_source['source_name'], in_metadata_mappings, in_metadata_content)
+                        for km, vm in movie.iteritems():                                
+                                property_URI = sourceField_2_globalSchemaURI(km, in_source['source_name'], in_metadata_mappings, in_metadata_content)
                                 if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
                                     triple = []
-                                    triple.append(theater['name'].replace(' ', '_'))
-                                    triple.append(property_URI)
-                                    triple.append(vm.replace(' ', '_'))
-                                    triples.append(triple)                                                                        
-                                    print triple
-                                property_URI = sourceField_2_globalSchemaURI("movieType", in_source['source_name'], in_metadata_mappings, in_metadata_content)
-                                if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
-                                    triple = []                                    
-                                    triple.append(vm.replace(' ', '_'))
-                                    triple.append("rdf:type")
-                                    triple.append(property_URI)
-                                    triples.append(triple)                                    
-                                    print triple
-                                property_URI = sourceField_2_globalSchemaURI("movieName", in_source['source_name'], in_metadata_mappings, in_metadata_content)
-                                if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
-                                    triple = []                                    
-                                    triple.append(vm.replace(' ', '_'))                                    
+                                    triple.append(theaterURI)
                                     triple.append(property_URI)
                                     triple.append(vm)
-                                    triples.append(triple)                                    
+                                    triples.append(triple)                                                                        
                                     print triple
 
-    return triples
+    result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
+
+    return result
 
 
 def DBPEDIA_SOURCE_request_film_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
