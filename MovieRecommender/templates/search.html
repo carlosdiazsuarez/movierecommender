@@ -1,0 +1,19 @@
+$def with (name, movies)
+
+$if name and movies:
+    <h1>These are movies with title like <em>"$name.encode("latin_1")"</em>:</h1>        
+    <table  border="1">
+    <tr>
+    <td bgcolor="eeeeee">
+    <b>Movies</b>
+    </td>
+    </tr>
+    $for movie in movies:
+    	<tr>
+    	<td>
+    		<a href=$movie[0]>$movie[2]</a>
+    	</td>
+    	</tr>
+    </table>    
+$else:
+    <h1>No movies found with title like <em>"$name.encode("latin_1")"</em>.</h1>

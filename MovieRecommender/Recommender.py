@@ -19,16 +19,19 @@ from xml.dom import minidom
 from connectors.dbpedia.DBpedia import DBpedia
 from connectors.googlemoviesshowtimes.gms_connector import GoogleMovieShowtimes
 from connectors.http_api_request.http_api_request_connector import http_api_request_connector
+from connectors.imdb.imdb_connector import IMDB
 from connectors.twitter.twitter_patternPkg_connector import twitter_patternPkg_connector
-from connectors.twitter.twitter_streaming_connector import twitter_streaming_connector
 from connectors.virtuoso.virtuoso_connector import VirtuosoConnector
 
 
 ##########################################################################
 # initialize virtuoso
 RDF_GRAPH_RECOMMENDER = 'OD_RDF_Graph_Recommender' 
-virtuosoConnector = VirtuosoConnector()
 
+# Connectors
+virtuosoConnector = VirtuosoConnector()
+dbpedia = DBpedia()
+imdbConnector = IMDB()
 
 SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA= 'SOURCE ITEM NOT EXISTING IN GLOBAL SCHEMA'
 
@@ -249,7 +252,48 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
     # if movie was not found, return empty list    
     return all_triples
 
-def VIRTUOSO_request_movie_byName(in_name):        
+def search_movies_byName(in_name, in_metadata_mappings, in_metadata_content):
+    
+    print '\n' + '*'*40    
+    print 'search_movies_byName'
+    print '*'*40
+    
+    titles = []
+    titles.append(in_name)
+    
+    ''' Search orginal title '''
+    ids =  imdbConnector.getIDs(in_name)        
+    for id in ids:
+        results = imdbConnector.getTitleExtra(id)
+        for result in results:
+            titles.append(result)        
+    
+    ''' Eliminamos las repeticiones '''
+    titles = list(set(titles))
+        
+    movies = []    
+    for title in titles: 
+        results = VIRTUOSO_request_movie_byName(title, in_metadata_mappings, in_metadata_content)
+        for result in results:
+            movies.append(result)
+            
+    ''' Eliminamos las repeticiones '''
+    movies = list(set(movies))
+
+    triples = []
+    for movie in movies:
+        triple = []
+        triple.append(movie[0])
+        triple.append('https://schema.org/alternateName')
+        triple.append(in_name)
+        triples.append(movie)
+        triples.append(triple)             
+           
+    result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
+                          
+    return movies
+
+def VIRTUOSO_request_movie_byName(in_name, in_metadata_mappings, in_metadata_content):        
     
     print '\n' + '*'*40    
     print 'VIRTUOSO_request_movie_byName'
@@ -257,21 +301,19 @@ def VIRTUOSO_request_movie_byName(in_name):
     
     print 'Searching in DBpedia for: ', in_name    
 
-    movies = []
-    triples = []
-    
+    movies = []   
     # This will use the name of the movie provided by the user
-    # to get all the dbpedia_resultspossible URIs that match.
-    dbpedia = DBpedia()
+    # to get all the dbpedia_resultspossible URIs that match.    
     dbpedia_results = dbpedia.getURIs(in_name)  
     
-    for row in dbpedia_results:
-        values = sparql.unpack_row(row)
-        movies.append((values[0], values[1]))
-        
-    for movie in movies:                       
-        print 'URI: ' + movie[0]
-        print 'Name: ' + movie[1]
+    property_URI = sourceField_2_globalSchemaURI('http://xmlns.com/foaf/0.1/name', 'DBPEDIA_source', in_metadata_mappings, in_metadata_content)
+    if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:    
+        for row in dbpedia_results:
+            values = sparql.unpack_row(row)
+            movies.append((values[0], property_URI, values[1]))
+            
+        for movie in movies:                                   
+            print movie
     
     return movies
 
@@ -295,6 +337,25 @@ def VIRTUOSO_request_theaters_byCity(in_city_name):
     triples = virtuosoConnector.query(query)
     
     return triples
+
+def VIRTUOSO_request_movies_byAlternateName(in_alternateName):
+
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_movies_byCity'
+    print '*'*40    
+        
+    query = 'SELECT ?s ?p ?name\n'
+    query += 'WHERE {\n'
+    query += '?s <https://schema.org/name> ?name .\n'
+    query += '?s <https://schema.org/alternateName> ?o .\n'
+    query += 'FILTER regex(?o, "' + in_alternateName + '" )\n'
+    query += '}'
+    
+    print query
+    
+    results = virtuosoConnector.query(query)
+    
+    return results
 
 
 def VIRTUOSO_request_movies_byCity(in_city_name):
@@ -377,9 +438,7 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
 
 
 def DBPEDIA_SOURCE_request_movie_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
-    
-    dbpedia = DBpedia()
-        
+           
     triples = []
     result = dbpedia.getResource(in_movie_uri)        
     for row in result:
@@ -511,7 +570,6 @@ def main():
 
     # This will use the name of the movie provided by the user
     # to get all the dbpedia_resultspossible URIs that match.
-    dbpedia = DBpedia()
     dbpedia_results = dbpedia.getURIs(film_to_search)  
     
     print '\n' + '*'*40

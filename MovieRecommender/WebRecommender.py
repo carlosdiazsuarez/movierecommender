@@ -7,7 +7,6 @@ Created on 25/05/2015
 import web
 
 import Recommender
-from connectors.imdb.imdb_connector import IMDB
 
 
 render = web.template.render('templates/')
@@ -15,7 +14,7 @@ render = web.template.render('templates/')
 urls = (
     '/', 'index',
     '/coldstart', 'coldstart',
-    '/recommendation', 'recommendation'
+    '/search', 'search'
 )
    
 ##########################################################################
@@ -46,34 +45,12 @@ class coldstart:
                 movies = Recommender.VIRTUOSO_request_movies_byCity(input.city)
         return render.coldstart(input.city, theaters, movies )                                      
 
-class recommendation:
+class search:
     def GET(self):
         input = web.input(movie=None)
-  
-        titles = []
-        titles.append(input.movie)
-        
-        ''' Search orginal title '''
-        imdbConnector = IMDB()
-        ids =  imdbConnector.getIDs(input.movie)        
-        for id in ids:
-            results = imdbConnector.getTitleExtra(id)
-            for result in results:
-                titles.append(result)        
-        
-        ''' Eliminamos las repeticiones '''
-        titles = list(set(titles))
-            
-        movies = []    
-        for title in titles: 
-            results = Recommender.VIRTUOSO_request_movie_byName(title)
-            for result in results:
-                movies.append(result)
-                
-        ''' Eliminamos las repeticiones '''
-        movies = list(set(movies))                
-            
-        return render.recommendation(input.movie, movies)
+        Recommender.search_movies_byName(input.movie, metadata_mappings, metadata_content)
+        movies = Recommender.VIRTUOSO_request_movies_byAlternateName(input.movie)                    
+        return render.search(input.movie, movies)
 
 if __name__ == "__main__":       
     app = web.application(urls, globals())

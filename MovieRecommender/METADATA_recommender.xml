@@ -3,7 +3,8 @@
 	<!--general movie properties (URI). Schema for the data lake -->
 	<URI_properties_DataLake_schema>
 		<uri_property name ="movie_type"> https://schema.org/Movie </uri_property>
-		<uri_property name ="movie_name"> https://schema.org/name </uri_property>	
+		<uri_property name ="movie_name"> https://schema.org/name </uri_property>
+		<uri_property name ="movie_alternateName"> https://schema.org/alternateName </uri_property>		
 		<uri_property name ="movie_desc"> https://schema.org/description </uri_property>	
 		<uri_property name ="movie_genre"> https://schema.org/genre </uri_property>	
 		<uri_property name ="movie_director"> https://schema.org/director </uri_property>	

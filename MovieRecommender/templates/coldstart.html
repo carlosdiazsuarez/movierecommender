@@ -5,7 +5,7 @@ $if city:
     <p/>
     Here you have some theaters and movies currently in <em>$city</em>:
     <p/>
-    <table border="1">
+    <table border="1">    
 	$for theater in theaters:
 	    <tr>
 	    <td bgcolor="eeeeee">
@@ -16,7 +16,7 @@ $if city:
 		<td>
 		$for movie in movies:
 			$if theater[0] == movie[0]: 
-    			<a href="http://localhost:8081/recommendation?movie=$movie[2]">$movie[2].encode("latin_1")</a>
+    			<a href="http://localhost:8081/search?movie=$movie[2]">$movie[2].encode("latin_1")</a>
     			<br/>
     	</td>
     	<tr>
