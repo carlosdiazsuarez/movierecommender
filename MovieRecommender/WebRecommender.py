@@ -55,6 +55,7 @@ class movie:
     def GET(self):
         source_name1 = 'DBPEDIA_source'
         source_name2 = 'OMDB_source'
+        source_name3 = 'TWITTER_source'
         input = web.input(name=None, uri=None)
         Recommender.DBPEDIA_request_movie_info(input.uri, source_name1, metadata_mappings, metadata_content)
         Recommender.OMDB_request_movie_info(input.name, source_name2, metadata_mappings, metadata_content)
@@ -99,8 +100,10 @@ class movie:
                 movie_actors.append(field[2])                
                 
         cbrs = Recommender.VIRTUOSO_request_content_based_recommendation(input.uri)
+        
+        tweets = Recommender.TWITTER_SOURCE_request_movie_info(input.name, source_name3, metadata_mappings, metadata_content)
                           
-        return render.movie(input.uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs)
+        return render.movie(input.uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, tweets)
     
 if __name__ == "__main__":       
     app = web.application(urls, globals())
