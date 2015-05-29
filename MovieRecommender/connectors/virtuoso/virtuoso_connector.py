@@ -89,6 +89,9 @@ class VirtuosoConnector(object):
             pass
         
     def insert_triples_movie_info(self, in_film_name, in_triples_lists, in_RDFgraph, in_source_name):
+        print '\n' + '*'*40
+        print 'VIRTUOSO CONNECTOR insert_triples_movie_info'
+        print '*'*40
         #PARAMETER: in_triples_lists 
             #1- list of elements (i.e. [ [...], [...], [...] ]. 
             #2- Each element [...] is a triple like [SUBJECT, PREDICATE, OBJECT]
@@ -126,6 +129,7 @@ class VirtuosoConnector(object):
         #print 'FRANKESNTEIN QUERY IS...\n' + SPARQL_full_insert_query
         
         query = SPARQL_full_insert_query
+        print query
         
         # launch
         try:

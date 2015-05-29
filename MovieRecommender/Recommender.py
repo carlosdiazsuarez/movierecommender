@@ -143,7 +143,45 @@ def sourceField_2_globalSchemaURI(in_source_item, in_source_name, in_metadata_ma
                 Global_schema_Field_URI = in_metadata_mappings[global_schema_field]
                 #print 'FOUND SOURCE FOUND ITEM!!!' + global_schema_field + '------->' + Global_schema_Field_URI
     #print Global_schema_Field_URI
-    return Global_schema_Field_URI                
+    return Global_schema_Field_URI 
+
+
+def OMDB_request_movie_info(in_film_to_search, in_source, in_metadata_mappings, in_metadata_content):
+    
+    print '\n' + '*'*40    
+    print 'OMDB_request_movie_info'
+    print '*'*40
+    
+    for source in in_metadata_content:
+        if source['source_name'] == in_source:
+            location = source['location']
+    
+    http_api_conn = http_api_request_connector()
+    request_string = build_http_api_request_film(location, in_film_to_search)
+    json_movie_result = http_api_conn.getMovie_Information(request_string)
+
+
+    triples = []
+    for source_item in json_movie_result:
+        source_item_value = json_movie_result[source_item]
+        property_URI = sourceField_2_globalSchemaURI(source_item, in_source, in_metadata_mappings, in_metadata_content)
+        
+        if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:     
+
+            triple = []
+            film_URI = in_film_to_search.replace(' ', '_') # URI crashes in SPARQL is blanks exist
+            film_URI += '_' + in_source
+            triple.append(film_URI)
+            triple.append(property_URI)
+            triple.append(source_item_value)
+            triples.append(triple)
+
+    result = 0            
+    if len(triples) > 0: 
+        result = virtuosoConnector.insert_triples_movie_info(in_film_to_search, triples, RDF_GRAPH_RECOMMENDER, in_source)                
+                            
+    return result
+               
         
 def HTTP_API_SOURCE_request_film_info(in_film_to_search, in_source, in_metadata_mappings, in_metadata_content):
     #print '------ SOURCE NAME:         ', in_source['source_name']
@@ -252,10 +290,10 @@ def TWITTER_SOURCE_request_film_info (in_film_to_search, in_source, in_metadata_
     # if movie was not found, return empty list    
     return all_triples
 
-def search_movies_byName(in_name, in_metadata_mappings, in_metadata_content):
+def IMDB_search_movies_byName(in_name, in_metadata_mappings, in_metadata_content):
     
     print '\n' + '*'*40    
-    print 'search_movies_byName'
+    print 'IMDB_search_movies_byName'
     print '*'*40
     
     titles = []
@@ -270,10 +308,14 @@ def search_movies_byName(in_name, in_metadata_mappings, in_metadata_content):
     
     ''' Eliminamos las repeticiones '''
     titles = list(set(titles))
+    
+    print 'IMDB has return the following titles'
+    for title in titles:
+        print title
         
     movies = []    
     for title in titles: 
-        results = VIRTUOSO_request_movie_byName(title, in_metadata_mappings, in_metadata_content)
+        results = DBPEDIA_request_movie_byName(title, in_metadata_mappings, in_metadata_content)
         for result in results:
             movies.append(result)
             
@@ -288,15 +330,17 @@ def search_movies_byName(in_name, in_metadata_mappings, in_metadata_content):
         triple.append(in_name)
         triples.append(movie)
         triples.append(triple)             
-           
-    result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
+    
+    result = 0            
+    if len(triples) > 0:        
+        result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
                           
     return movies
 
-def VIRTUOSO_request_movie_byName(in_name, in_metadata_mappings, in_metadata_content):        
+def DBPEDIA_request_movie_byName(in_name, in_metadata_mappings, in_metadata_content):        
     
     print '\n' + '*'*40    
-    print 'VIRTUOSO_request_movie_byName'
+    print 'DBPEDIA_request_movie_byName'
     print '*'*40
     
     print 'Searching in DBpedia for: ', in_name    
@@ -331,9 +375,7 @@ def VIRTUOSO_request_theaters_byCity(in_city_name):
     query += '?s <https://schema.org/location> ?address .\n'
     query += 'FILTER regex(?address, "' + in_city_name + '" )\n'
     query += '}'
-    
-    print query
-    
+        
     triples = virtuosoConnector.query(query)
     
     return triples
@@ -341,7 +383,7 @@ def VIRTUOSO_request_theaters_byCity(in_city_name):
 def VIRTUOSO_request_movies_byAlternateName(in_alternateName):
 
     print '\n' + '*'*40    
-    print 'VIRTUOSO_request_movies_byCity'
+    print 'VIRTUOSO_request_movies_byAlternateName'
     print '*'*40    
         
     query = 'SELECT ?s ?p ?name\n'
@@ -350,10 +392,50 @@ def VIRTUOSO_request_movies_byAlternateName(in_alternateName):
     query += '?s <https://schema.org/alternateName> ?o .\n'
     query += 'FILTER regex(?o, "' + in_alternateName + '" )\n'
     query += '}'
-    
-    print query
-    
+        
     results = virtuosoConnector.query(query)
+    
+    for result in results:
+        print result
+    
+    return results
+
+
+def VIRTUOSO_entity_resolution_byName(in_name, in_source_name):
+        
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_movies_byName'
+    print '*'*40    
+        
+    query = 'SELECT ?s ?p ?o\n'
+    query += 'WHERE {\n'
+    query += '?s ?p ?o .\n'
+    query += 'FILTER regex(?s, "' + in_name.replace(' ','_') + '_' + in_source_name + '" )\n'
+    query += '}'
+        
+    results = virtuosoConnector.query(query)
+    
+    for result in results:
+        print result
+    
+    return results
+        
+
+def VIRTUOSO_request_movie_info_byURI(in_URI):
+
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_movies_byURI'
+    print '*'*40    
+        
+    query = 'SELECT ?s ?p ?o\n'
+    query += 'WHERE {\n'
+    query += '?s ?p ?o .\n'
+    query += 'FILTER (?s = <' + in_URI + '> )\n'    
+    query += '}'        
+    results = virtuosoConnector.query(query)
+    
+    for result in results:
+        print result
     
     return results
 
@@ -371,9 +453,7 @@ def VIRTUOSO_request_movies_byCity(in_city_name):
     query += '?s <https://schema.org/location> ?address .\n'
     query += 'FILTER regex(?address, "' + in_city_name + '" )\n'
     query += '}'
-    
-    print query
-    
+       
     triples = virtuosoConnector.query(query)
     
     #Remove what is not part of the name
@@ -388,10 +468,10 @@ def VIRTUOSO_request_movies_byCity(in_city_name):
     
 
 
-def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings, in_metadata_content):
+def GMS_request_movies_info(in_city_name, in_source, in_metadata_mappings, in_metadata_content):
     
     print '\n' + '*'*40    
-    print 'GMS_SOURCE_request_movies_info'
+    print 'GMS_request_movies_info'
     print '*'*40    
     
     gmsConnector = GoogleMovieShowtimes(in_city_name)
@@ -402,7 +482,7 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
     for k, v in results.iteritems():
         for theater in v:            
             theaterURI = theater['name'].replace(' ', '_') + "_GMS_source"            
-            property_URI = sourceField_2_globalSchemaURI(k, in_source['source_name'], in_metadata_mappings, in_metadata_content)
+            property_URI = sourceField_2_globalSchemaURI(k, in_source, in_metadata_mappings, in_metadata_content)
             if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
                 triple = []            
                 triple.append(theaterURI)
@@ -412,7 +492,7 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
                 print triple                            
             for kt, vt in theater.iteritems():
                 if type(vt) is not list:
-                    property_URI = sourceField_2_globalSchemaURI(kt, in_source['source_name'], in_metadata_mappings, in_metadata_content)
+                    property_URI = sourceField_2_globalSchemaURI(kt, in_source, in_metadata_mappings, in_metadata_content)
                     if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
                         triple = []
                         triple.append(theaterURI)
@@ -423,7 +503,7 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
                 else: 
                     for movie in vt:
                         for km, vm in movie.iteritems():                                
-                                property_URI = sourceField_2_globalSchemaURI(km, in_source['source_name'], in_metadata_mappings, in_metadata_content)
+                                property_URI = sourceField_2_globalSchemaURI(km, in_source, in_metadata_mappings, in_metadata_content)
                                 if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
                                     triple = []
                                     triple.append(theaterURI)
@@ -432,21 +512,24 @@ def GMS_SOURCE_request_movies_info(in_city_name, in_source, in_metadata_mappings
                                     triples.append(triple)                                                                        
                                     print triple
 
-    result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
+    result = 0            
+    if len(triples) > 0: 
+        result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
 
     return result
 
 
-def DBPEDIA_SOURCE_request_movie_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
+def DBPEDIA_request_movie_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
            
-    triples = []
-    result = dbpedia.getResource(in_movie_uri)        
-    for row in result:
-        
-            source_item = row[0].value
-                                    
-            property_URI = sourceField_2_globalSchemaURI(source_item, in_source['source_name'], in_metadata_mappings, in_metadata_content)
-            
+    print '\n' + '*'*40    
+    print 'DBPEDIA_request_movie_info'
+    print '*'*40                   
+           
+    triples = []                
+    results = dbpedia.getResource(in_movie_uri)                                                    
+    for row in results:        
+            source_item = row[0].value                            
+            property_URI = sourceField_2_globalSchemaURI(source_item, in_source, in_metadata_mappings, in_metadata_content)            
             if property_URI != SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA:
                 source_item_value = row[1].value     
                 single_triple = []
@@ -454,8 +537,12 @@ def DBPEDIA_SOURCE_request_movie_info (in_movie_uri, in_source, in_metadata_mapp
                 single_triple.append(property_URI)
                 single_triple.append(source_item_value)
                 triples.append(single_triple)
-            
-    return triples
+                        
+    result = 0            
+    if len(triples) > 0:     
+        result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
+                            
+    return result
 
         
        
@@ -525,12 +612,66 @@ def JAIME_wants_to_load_his_file_with_100_films(metadata_mappings, metadata_cont
                     
         film_to_search = f_1stload_movie.readline()
         film_to_search = film_to_search[0: (len(film_to_search) -2)] # get rid of \r\n
-        print '\n\nREADING FROM FILE: ' + film_to_search    
-    
-
-
-
+        print '\n\nREADING FROM FILE: ' + film_to_search   
         
+        
+def content_based_recommender(in_movie_uri, in_metadata_mappings, in_metadata_content):
+    
+    print '\n' + '*'*40    
+    print 'CONTENT BASED RECOMMENDER (content_based_recommender)'
+    print '*'*40  
+    
+    results = VIRTUOSO_request_movie_info_byURI(in_movie_uri)
+    
+    for result in results:
+        if result[1] == "https://schema.org/director":
+            q = ("""
+                SELECT ?s ?o
+                WHERE {
+                     ?s <http://xmlns.com/foaf/0.1/name> ?o .
+                     ?s <http://dbpedia.org/ontology/director> <""" + result[2] + """> .
+                }
+            """)
+            results = dbpedia.query(q)
+            
+            for result in results:
+                try:
+                    print "\nCONTENT BASED RECOMMENDATION:"
+                    print result
+                    DBPEDIA_request_movie_info(result[0].value, 'DBPEDIA_source', in_metadata_mappings, in_metadata_content)
+                    OMDB_request_movie_info(result[1].value, 'OMDB_source', in_metadata_mappings, in_metadata_content)
+                except:
+                    print "Unexpected error:", sys.exc_info()[0]
+                    pass                      
+    return
+
+def VIRTUOSO_request_content_based_recommendation(in_movie_uri):
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_content_based_recommendation'
+    print '*'*40    
+        
+    query = 'SELECT ?s ?p ?o\n'
+    query += 'WHERE {\n'
+    query += '<' + in_movie_uri + '> <https://schema.org/director> ?o .\n' 
+    query += '}'
+       
+    triples = virtuosoConnector.query(query)
+    
+    recommendations = []
+    for triple in triples:
+        query = 'SELECT ?s ?p ?o\n'
+        query += 'WHERE {\n'
+        query += '?s <https://schema.org/name> ?o .\n'        
+        query += '?s <https://schema.org/director> ?director .\n'
+        query += 'FILTER regex(?director, "' +  triple[2] + '")'
+        query += '}'
+        results = virtuosoConnector.query(query) 
+        for result in results:
+            if result[0] != in_movie_uri:
+                recommendations.append(result)        
+            
+    return recommendations      
+    
 def main():
     
     ##########################################################################
@@ -639,14 +780,7 @@ def main():
                 
                 # get all triples from film in source
                 movie_triples = []
-                movie_triples = DBPEDIA_SOURCE_request_movie_info(movie_uri, source, metadata_mappings, metadata_content)
-                if len(movie_triples) > 0:
-                    # print_movie_triples(film_all_triples)
-                    # load into virtuoso
-                    virtuoso_conn.insert_triples_movie_info (movie_uri, movie_triples, RDF_GRAPH_RECOMMENDER, source['source_name'])
-                else:
-                    print_metadata_not_found(movie_name, source['source_name'])
-                                                
+                DBPEDIA_request_movie_info(movie_uri, source, metadata_mappings, metadata_content)                                                
             
         if (source['query_type']) == 'HTTP_request':
             print '\n' + '*'*40

@@ -17,6 +17,14 @@ class DBpedia(object):
         Constructor
         '''
         
+    def query(self, q):
+        print q 
+        
+        result = sparql.query('http://dbpedia.org/sparql', q)
+                
+        return result        
+        
+        
     def getURIs(self, name):        
         q = ("""
             PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -25,22 +33,31 @@ class DBpedia(object):
                 ?uri a schema:Movie .
                 ?uri foaf:name ?name . 
                 FILTER regex(?name, '""" +  name + """')
-                FILTER (langMatches(lang(?name),"en"))
             }
         """)
-        results = sparql.query('http://dbpedia.org/sparql', q)
+        
+        print q 
+        
+        result = sparql.query('http://dbpedia.org/sparql', q)
                 
-        return results
+        return result
+        
     
     def getResource(self, uri):
         q = ("""
             PREFIX foaf: <http://xmlns.com/foaf/0.1/>
             PREFIX schema: <http://schema.org/>
-            SELECT ?p ?o WHERE {
-                <""" + uri + """> ?p ?o .
-                FILTER (langMatches(lang(?o),"en"))
+
+            SELECT DISTINCT ?p ?o WHERE {
+               <""" + uri + """> ?p ?o .
+               FILTER (regex(?o, "http") || lang(?o) = 'en' || datatype(?o) != xsd:string )
             }
-        """)
+            """)
+        
+        print q
+        
         result = sparql.query('http://dbpedia.org/sparql', q)
                 
         return result
+
+

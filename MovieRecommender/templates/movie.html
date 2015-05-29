@@ -1,0 +1,44 @@
+$def with (movie_uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs)
+
+<h1>$movie_name</h1>
+
+<table cellpadding="2">
+<tr>
+$if movie_image:
+	<td valign="top">
+	<img src=$movie_image/>
+	</td>
+<td valign="top">
+<table border=1>
+<tr><td bgcolor="eeeeee"><b>DBpedia URI</b></b></td><tr>
+<tr><td><a href="$movie_uri">$movie_uri</a></td><tr>
+<tr><td bgcolor="eeeeee"><b>Abstract</b></b></td><tr>
+<tr><td>$movie_desc.encode("latin_1")</td><tr>
+<tr><td bgcolor="eeeeee"><b>Year</b></b></td><tr>
+<tr><td>$movie_year</td><tr>
+<tr><td bgcolor="eeeeee"><b>Genre</b></b></td><tr>
+<tr><td>$movie_genre</td><tr>
+<tr><td bgcolor="eeeeee"><b>Director</b></b></td><tr>
+$for movie_director in movie_directors: 
+	$if "http" in movie_director:
+		<tr><td><a href="$movie_director">$movie_director</a></td><tr>
+	$else:
+		<tr><td>$movie_director</td><tr>
+<tr><td bgcolor="eeeeee"><b>Actors</b></b></td><tr>
+$for movie_actor in movie_actors: 
+	$if "http" in movie_actor:
+		<tr><td><a href="$movie_actor">$movie_actor</a></td><tr>
+	$else:
+		<tr><td>$movie_actor</td><tr>
+</table>
+</td>
+<td valign="top">
+<table border=1>
+<tr><td bgcolor="eeeeee"><b><nobr>Other director's movies:</nobr></b></td><tr>
+$for movie in cbrs:		
+	<tr><td><a href="http://localhost:8081/movie?name=$movie[2]&uri=$movie[0]">$movie[2]</a></td><tr>
+</table>
+
+</td>
+</tr>
+</table>
