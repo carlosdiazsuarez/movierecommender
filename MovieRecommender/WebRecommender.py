@@ -4,10 +4,10 @@ Created on 25/05/2015
 @author: cdiaz
 '''
 
+import re
 import web
 
 import Recommender
-
 
 render = web.template.render('templates/')
 
@@ -17,7 +17,7 @@ urls = (
     '/search', 'search',
     '/movie', 'movie'
 )
-   
+  
 ##########################################################################
 # initialize global variables
 SOURCE_ITEM_NOT_IN_GLOBAL_SCHEMA= 'SOURCE ITEM NOT EXISTING IN GLOBAL SCHEMA'
@@ -33,10 +33,25 @@ metadata_mappings = Recommender.readMetadata_mappings(METADATA)
    
 class index:
     def GET(self):
+        
+        userId = web.cookies().get('userId')
+        if userId == None:
+            f = open('WebRecommender.status', 'r')
+            counter = int(f.readline())
+            web.setcookie('userId', str(counter), 3600)
+            f.close()
+            counter += 1
+            f = open('WebRecommender.status', 'w')
+            f.write(str(counter))
+            f.close()
+
         return render.index()
     
 class coldstart:
     def GET(self):
+        userId = web.cookies().get('userId')
+        web.setcookie('userId', str(userId), 3600)
+        
         source_name = 'GOOGLE_MOVIE_SHOWTIMES_source'
         input = web.input(city=None)       
         Recommender.GMS_request_movies_info(input.city, source_name, metadata_mappings, metadata_content)
@@ -46,6 +61,9 @@ class coldstart:
 
 class search:
     def GET(self):
+        userId = web.cookies().get('userId')
+        web.setcookie('userId', str(userId), 3600)
+        
         input = web.input(movie=None)
         Recommender.IMDB_search_movies_byName(input.movie, metadata_mappings, metadata_content)
         movies = Recommender.VIRTUOSO_request_movies_byAlternateName(input.movie)                    
@@ -53,13 +71,21 @@ class search:
     
 class movie:
     def GET(self):
+        userId = web.cookies().get('userId')
+        web.setcookie('userId', str(userId), 3600)
+        
         source_name1 = 'DBPEDIA_source'
         source_name2 = 'OMDB_source'
         source_name3 = 'TWITTER_source'
         input = web.input(name=None, uri=None)
+        
         Recommender.DBPEDIA_request_movie_info(input.uri, source_name1, metadata_mappings, metadata_content)
         Recommender.OMDB_request_movie_info(input.name, source_name2, metadata_mappings, metadata_content)
-        Recommender.content_based_recommender(input.uri, metadata_mappings, metadata_content)                        
+        Recommender.TWITTER_SOURCE_request_movie_info(input.name, source_name3, metadata_mappings, metadata_content)
+
+        Recommender.VIRTUOSO_insert_user_interaction(str(userId), input.uri)
+        Recommender.content_based_recommender(input.uri, metadata_mappings, metadata_content)
+                       
 
         info = Recommender.VIRTUOSO_request_movie_info_byURI(input.uri)
         triples = Recommender.VIRTUOSO_entity_resolution_byName(input.name, source_name2)
@@ -100,11 +126,11 @@ class movie:
                 movie_actors.append(field[2])                
                 
         cbrs = Recommender.VIRTUOSO_request_content_based_recommendation(input.uri)
-        
-        tweets = Recommender.TWITTER_SOURCE_request_movie_info(input.name, source_name3, metadata_mappings, metadata_content)
+        tweets = Recommender.VIRTUOSO_request_tweets_byName(input.name, source_name3)
+        ubrs = Recommender.VIRTUOSO_request_user_based_recommender_byUserInteraction(userId, input.uri)
                           
-        return render.movie(input.uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, tweets)
+        return render.movie(input.uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, ubrs, tweets)
     
-if __name__ == "__main__":       
+if __name__ == "__main__":
     app = web.application(urls, globals())
     app.run()

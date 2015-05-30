@@ -15,7 +15,9 @@ class twitter_patternPkg_connector(object):
     '''
 
     def __init__(self):
+        '''
         self.FILE_STORAGE = "OD_CK1_Source4_Tweeter_InitialLoad.csv"
+        '''
         self.search_topic = ''
 
     def formatData2Json(self, tweet_id, tweet_date, tweet_subject, tweet_text):
@@ -35,8 +37,10 @@ class twitter_patternPkg_connector(object):
         # This example retrieves tweets containing given keywords from Twitter.
 
         self.search_topic = topic
-        print 'CLASS (Twitter_PatternPKG) - Twitter Secure Initial Load - Topic: ' + self.search_topic
         self.search_topic = topic + ' film'
+
+        '''
+        print 'CLASS (Twitter_PatternPKG) - Twitter Secure Initial Load - Topic: ' + self.search_topic
         try: 
             # We'll store tweets in a Datasheet.
             # A Datasheet is a table of rows and columns that can be exported as a CSV-file.
@@ -52,6 +56,10 @@ class twitter_patternPkg_connector(object):
         except:
             table = Datasheet()
             index = set()
+        '''
+        
+        table = Datasheet()
+        index = set()
 
         engine = Twitter(language="en")
 
@@ -105,7 +113,9 @@ class twitter_patternPkg_connector(object):
                     prev = tweet.text
     
         except Exception:
+            ''' 
             print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - ERROR!! - ([twitter_patternPkg_connector] getTweetSecureLoad)'
+            '''
             print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX - ERROR!!   (film: ' + oneSubject +')' 
             pass
         

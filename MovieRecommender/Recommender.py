@@ -14,6 +14,7 @@ import re, math
 import sparql
 import string
 import sys
+import urllib
 from xml.dom import minidom
 
 from connectors.dbpedia.DBpedia import DBpedia
@@ -263,8 +264,12 @@ def TWITTER_SOURCE_request_movie_info (in_film_to_search, in_source, in_metadata
                 single_triple.append(property_URI)
                 single_triple.append(source_item_value)
                 all_triples.append(single_triple)
+                
+    result = 0            
+    if len(all_triples) > 0:     
+        result = virtuosoConnector.insert(all_triples, RDF_GRAPH_RECOMMENDER)
 
-    return all_triples
+    return result
 
 def IMDB_search_movies_byName(in_name, in_metadata_mappings, in_metadata_content):
     
@@ -349,7 +354,7 @@ def VIRTUOSO_request_theaters_byCity(in_city_name):
     query += '?s <https://schema.org/name> ?o .\n'
     query += '?s <rdf:type> <https://schema.org/MovieTheater> .\n' 
     query += '?s <https://schema.org/location> ?address .\n'
-    query += 'FILTER regex(?address, "' + in_city_name + '" )\n'
+    query += 'FILTER contains(?address, "' + in_city_name + '" )\n'
     query += '}'
         
     triples = virtuosoConnector.query(query)
@@ -366,7 +371,7 @@ def VIRTUOSO_request_movies_byAlternateName(in_alternateName):
     query += 'WHERE {\n'
     query += '?s <https://schema.org/name> ?name .\n'
     query += '?s <https://schema.org/alternateName> ?o .\n'
-    query += 'FILTER regex(?o, "' + in_alternateName + '" )\n'
+    query += 'FILTER contains(?o , "' + in_alternateName + '" )\n'
     query += '}'
         
     results = virtuosoConnector.query(query)
@@ -377,6 +382,25 @@ def VIRTUOSO_request_movies_byAlternateName(in_alternateName):
     return results
 
 
+def VIRTUOSO_request_tweets_byName(in_name, in_source_name):
+        
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_tweets_byName'
+    print '*'*40    
+        
+    query = 'SELECT ?s ?p ?o\n'
+    query += 'WHERE {\n'
+    query += '?s <https://schema.org/comment>  ?o .\n'
+    query += 'FILTER contains( str(?s), "' + in_name.replace(' ','_') + '_' + in_source_name + '" )\n'
+    query += '}'
+        
+    results = virtuosoConnector.query(query)
+    
+    for result in results:
+        print result
+    
+    return results
+
 def VIRTUOSO_entity_resolution_byName(in_name, in_source_name):
         
     print '\n' + '*'*40    
@@ -386,7 +410,7 @@ def VIRTUOSO_entity_resolution_byName(in_name, in_source_name):
     query = 'SELECT ?s ?p ?o\n'
     query += 'WHERE {\n'
     query += '?s ?p ?o .\n'
-    query += 'FILTER regex(?s, "' + in_name.replace(' ','_') + '_' + in_source_name + '" )\n'
+    query += 'FILTER contains(str(?s), "' + in_name.replace(' ','_') + '_' + in_source_name + '" )\n'
     query += '}'
         
     results = virtuosoConnector.query(query)
@@ -427,7 +451,7 @@ def VIRTUOSO_request_movies_byCity(in_city_name):
     query += '?s ?p ?o .\n'
     query += '?s <https://schema.org/event> ?o .\n' 
     query += '?s <https://schema.org/location> ?address .\n'
-    query += 'FILTER regex(?address, "' + in_city_name + '" )\n'
+    query += 'FILTER contains(?address, "' + in_city_name + '" )\n'
     query += '}'
        
     triples = virtuosoConnector.query(query)
@@ -494,6 +518,25 @@ def GMS_request_movies_info(in_city_name, in_source, in_metadata_mappings, in_me
 
     return result
 
+def VIRTUOSO_insert_user_interaction(in_userId, in_movie_uri):
+    
+    print '\n' + '*'*40    
+    print 'VITUOSO_insert_user_interaction'
+    print '*'*40
+    
+    triples = []
+    
+    triple = []
+    triple.append('USER_'+str(in_userId))
+    triple.append('https://schema.org/UserInteraction')
+    triple.append(in_movie_uri)
+    triples.append(triple)
+    
+    result = 0            
+    if len(triples) > 0:     
+        result = virtuosoConnector.insert(triples, RDF_GRAPH_RECOMMENDER)                
+                            
+    return result
 
 def DBPEDIA_request_movie_info (in_movie_uri, in_source, in_metadata_mappings, in_metadata_content):        
            
@@ -621,6 +664,50 @@ def content_based_recommender(in_movie_uri, in_metadata_mappings, in_metadata_co
                     pass                      
     return
 
+def VIRTUOSO_request_user_based_recommender_byUserInteraction(in_userId, in_movie_uri):
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_user_based_recommender_byUserInteraction'
+    print '*'*40    
+        
+    username = 'USER_'+in_userId
+    
+    query = 'SELECT ?s ?p ?o\n'
+    query += 'WHERE {\n'
+    query += '?s <https://schema.org/UserInteraction> <'+ in_movie_uri + '> .\n' 
+    query += '}'
+       
+    triples = virtuosoConnector.query(query)
+    
+    final_movies = []
+    for triple in triples:
+        user = triple[0]
+        if user != username:
+            movies = []
+            query = 'SELECT ?s ?p ?o\n'
+            query += 'WHERE {\n'
+            query += '<'+ user +'> <https://schema.org/UserInteraction> ?o .\n' 
+            query += '}'
+            movies = virtuosoConnector.query(query)
+            for movie in movies:
+                if movie[2] != in_movie_uri:
+                    final_movies.append(movie[2])
+                    
+    final_movies = list(set(final_movies))
+                    
+    recommendations = []
+    for movie_uri in final_movies:
+        query = 'SELECT ?s ?p ?o\n'
+        query += 'WHERE {\n'
+        query += '?s <https://schema.org/name> ?o .\n'
+        query += 'FILTER (?s = <' + movie_uri + '>)'
+        query += '}'
+        results = virtuosoConnector.query(query)
+        for recommendation in results:
+            recommendations.append(recommendation)
+            
+    return recommendations
+    
+
 def VIRTUOSO_request_content_based_recommendation(in_movie_uri):
     print '\n' + '*'*40    
     print 'VIRTUOSO_request_content_based_recommendation'
@@ -639,7 +726,7 @@ def VIRTUOSO_request_content_based_recommendation(in_movie_uri):
         query += 'WHERE {\n'
         query += '?s <https://schema.org/name> ?o .\n'        
         query += '?s <https://schema.org/director> ?director .\n'
-        query += 'FILTER regex(?director, "' +  triple[2] + '")'
+        query += 'FILTER contains(str(?director), "'+  triple[2] + '" )'
         query += '}'
         results = virtuosoConnector.query(query) 
         for result in results:

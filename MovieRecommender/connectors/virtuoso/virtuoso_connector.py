@@ -7,7 +7,7 @@ Created on Apr 14, 2015
 import json
 from rdflib.plugins.sparql.algebra import triples
 from rdflib.term import Literal
-from sparql import SparqlException
+from sparql import SparqlException, IRI
 import sparql
 import urllib2
 
@@ -20,7 +20,7 @@ class VirtuosoConnector(object):
     global VIRTUOSO_SPARQL_ENDPOINT
     global handler
     global opener        
-    global sparql  
+    global sparql
         
     def __init__(self):
         self.VIRTUOSO_SPARQL_ENDPOINT = "http://localhost:8890/sparql"
@@ -49,7 +49,7 @@ class VirtuosoConnector(object):
             
         except sparql.SparqlException as e:
             print 'Exception: '
-            print e
+            print e.message
             print 'Query: '
             print query
             pass           
@@ -64,29 +64,34 @@ class VirtuosoConnector(object):
         print 'VIRTUOSO CONNECTOR insert'
         print '*'*40
         
-        
-        query = 'INSERT IN GRAPH <' + in_RDFGraph +'>\n'        
-        query += '{\n'
         for triple in in_triples:
+            '''
+            query = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> '
+            query += 'PREFIX foaf:  <http://xmlns.com/foaf/0.1/> '
+            '''
+            query = 'INSERT IN GRAPH <' + in_RDFGraph + '> '        
+            query += '{ '
+
             if "http" in triple[2]:
-                query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> .\n'
+                query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> . '
             else: 
-                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2] + '" .\n'
-        query += '}'
-        
-        # launch
-        try:
-            result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
-            print query
-            print "insert succeded, result: " + result.variables[0]
-            return result
+                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2].replace('"','') +  '" . '
             
-        except sparql.SparqlException as e:
-            print 'Exception: '
-            print e
-            print 'Query: '
-            print query
-            pass
+            query += '}'
+        
+            # launch
+            try:
+                result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
+                print query
+                            
+            except sparql.SparqlException as e:
+                print 'Exception: '
+                print e.message
+                print 'Query: '
+                print query
+                return -1
+        
+        return 0
         
     def insert_triples_movie_info(self, in_film_name, in_triples_lists, in_RDFgraph, in_source_name):
         print '\n' + '*'*40

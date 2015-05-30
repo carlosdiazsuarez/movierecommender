@@ -20,7 +20,7 @@
 		<uri_property name ="movie_awards"> https://schema.org/award </uri_property>	
 		<uri_property name ="movie_rating"> https://schema.org/aggregateRating </uri_property>	
 		<uri_property name ="movie_poster"> https://schema.org/image </uri_property>	
-		<uri_property name ="information_date"> http://dbpedia.org/ontology/date </uri_property>	
+		<uri_property name ="information_date"> https://schema.org/commentTime </uri_property>	
 
 		<uri_property name ="user_gender"> https://schema.org/gender </uri_property>	
 		<uri_property name ="user_age"> https://schema.org/typicalAgeRange </uri_property>	
@@ -77,7 +77,7 @@
 			<query_type> TWITTER_Topic  </query_type>	
 			<attributes>
 				<attr_property name ="information_date"> created_at </attr_property>		
-				<attr_property name ="movie_name"> movie_name </attr_property>	
+				<attr_property name ="movie_name"> topic </attr_property>	
 				<attr_property name ="user_name"> user_name </attr_property>	
 				<attr_property name ="movie_comment"> text </attr_property>
 			</attributes>

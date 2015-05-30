@@ -38,7 +38,7 @@ class GoogleMovieShowtimes:
         response = conn.getresponse()
         self.response_code = response.status
         self.response = response.getheaders
-     
+          
         self.response_body = ""
         while 1:
             data = response.read()

@@ -1,4 +1,4 @@
-$def with (movie_uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, tweets)
+$def with (movie_uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, ubrs, tweets)
 
 <h1>$movie_name</h1>
 
@@ -34,9 +34,12 @@ $for movie_actor in movie_actors:
 </td>
 <td valign="top">
 <table border=1>
-<tr><td bgcolor="eeeeee"><b><nobr>Other director's movies:</nobr></b></td><tr>
+<tr><td bgcolor="eeeeee"><b><nobr>Other director's movies:</nobr></b></td></tr>
 $for movie in cbrs:		
-	<tr><td><a href="http://localhost:8081/movie?name=$movie[2]&uri=$movie[0]">$movie[2]</a></td><tr>
+	<tr><td><a href="http://localhost:8081/movie?name=$movie[2]&uri=$movie[0]">$movie[2]</a></td></tr>
+<tr><td bgcolor="eeeeee"><b><nobr>Other users also have seen:</nobr></b></td></tr>
+$for movie in ubrs:		
+	<tr><td><a href="http://localhost:8081/movie?name=$movie[2]&uri=$movie[0]">$movie[2]</a></td></tr>
 </table>
 </td>
 <td valign="top">
