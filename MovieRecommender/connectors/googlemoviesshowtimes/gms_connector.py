@@ -60,37 +60,45 @@ class GoogleMovieShowtimes:
         resp = {'theater': []}
         theaters = self.html.findAll('div', attrs={'class': 'theater'})
         for div in theaters:
-            resp['theater'].append({})
-
-            index = resp['theater'].index({})
-
-            theater = []
-            theater.append(('name', div.div.h2.a.contents[0]))
-            theater.append(('address', div.div.div.contents[0]))
-            theater.append(('movies', []))
-
-            resp['theater'][index] = dict(theater)
-
-            movies = div.findAll('div', {'class': 'movie'})
-            for div_movie in movies:
-                resp['theater'][index]['movies'].append({})
-
-                index_m = resp['theater'][index]['movies'].index({})
-
-                movie = []                 
-                movie.append(('movieId', div_movie.div.a.attrs[0][1].split("=")[-1]))                
-                movie.append(('movieName', div_movie.div.a.contents[0]))
-                movie.append(('movieInfo', div_movie.span.contents[0]))
-                movie.append(('times', []))
-
-                resp['theater'][index]['movies'][index_m] = dict(movie)
-
-                times = div_movie.find('div', {'class': 'times'})
-                times = times.findAll('span')
-                for div_time in times:
-                    if len(div_time.contents) == 3:
-                        time_val = div_time.contents[2]
-                        time_val = re.search('(\d\d:\d\d)', time_val.string)
-                        resp['theater'][index]['movies'][index_m]['times'].append(time_val.group(0))
+            try:
+                resp['theater'].append({})
+    
+                index = resp['theater'].index({})
+    
+                theater = []
+                theater.append(('name', div.div.h2.a.contents[0]))
+                theater.append(('address', div.div.div.contents[0]))
+                theater.append(('movies', []))
+    
+                resp['theater'][index] = dict(theater)
+    
+                movies = div.findAll('div', {'class': 'movie'})
+                for div_movie in movies:
+                    try:
+                        resp['theater'][index]['movies'].append({})
+        
+                        index_m = resp['theater'][index]['movies'].index({})
+        
+                        movie = []                 
+                        movie.append(('movieId', div_movie.div.a.attrs[0][1].split("=")[-1]))                
+                        movie.append(('movieName', div_movie.div.a.contents[0]))
+                        movie.append(('movieInfo', div_movie.span.contents[0]))
+                        movie.append(('times', []))
+        
+                        resp['theater'][index]['movies'][index_m] = dict(movie)
+        
+                        times = div_movie.find('div', {'class': 'times'})
+                        times = times.findAll('span')
+                        for div_time in times:
+                            if len(div_time.contents) == 3:
+                                time_val = div_time.contents[2]
+                                time_val = re.search('(\d\d:\d\d)', time_val.string)
+                                resp['theater'][index]['movies'][index_m]['times'].append(time_val.group(0))
+                    except:
+                        print "Error parsing GMS page"
+                        pass
+            except:
+                print "Error parsing: GMS page"
+                pass
 
         return resp
