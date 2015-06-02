@@ -5,14 +5,15 @@ Created on 13/04/2015
 '''
 from googlemoviesshowtimes.parser import GoogleMovieShowtimes
 
+from geoip import geolite2
+
 if __name__ == '__main__':
-    parser = GoogleMovieShowtimes("barcelona")
     
-    resp = parser.parse()
+    match = geolite2.lookup_mine()
     
-    print resp
-    
-    parser = GoogleMovieShowtimes("madrid")
+    print match
+        
+    parser = GoogleMovieShowtimes(match.location)
     
     resp = parser.parse()
     

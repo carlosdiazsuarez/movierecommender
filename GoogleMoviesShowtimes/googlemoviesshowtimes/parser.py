@@ -7,15 +7,18 @@ Showtimes (www.google.com/movies) pages into dictionary objects.
 @author Vaidik Kapoor
 @version 0.1
 '''
-
-import httplib, urllib, BeautifulSoup, re
-from copy import deepcopy
-from BeautifulSoup import BeautifulSoup
-
 '''
 GoogleMovieShowtimes class
     This class is used for getting response from www.google.com/movies
 '''
+
+from copy import deepcopy
+import httplib
+from pattern.web.soup.BeautifulSoup import BeautifulSoup
+import re
+import urllib
+
+
 class GoogleMovieShowtimes:
     '''
     Constructor for GoogleMovieShowtimes class.
