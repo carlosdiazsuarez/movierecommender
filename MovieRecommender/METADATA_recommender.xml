@@ -33,6 +33,10 @@
 		<uri_property name ="theater_name"> https://schema.org/name </uri_property>	
 		<uri_property name ="theater_location"> https://schema.org/location </uri_property>	
 		<uri_property name ="theater_event"> https://schema.org/event </uri_property>
+		
+		<uri_property name="USER_RATING_MOVIE_Relation_RatingMovie"> https://schema.org/RatingMovie </uri_property>
+		<uri_property name="USER_RATING_MOVIE_Relation_RatingUser"> https://schema.org/RatingUser </uri_property>
+		<uri_property name="USER_RATING_MOVIE_Relation_RatingNumber"> https://schema.org/Rating </uri_property>		
 	</URI_properties_DataLake_schema>
 	<Recommender_sources>
 		<source_name name ="OMDB_source">
@@ -93,8 +97,8 @@
 			</attributes>
 		</source_name>
 		<source_name name ="MOVIELENS_source">
-			<location> https://localhost:8080 </location>	
-			<query_type> SQL </query_type>	
+			<location> data_recommender/movielens2015 </location>	
+			<query_type> SPARQL_MOVIELENS </query_type>	
 			<attributes>
 				<attr_property name ="movie_name"> Title </attr_property>	
 				<attr_property name ="movie_genre"> Genre </attr_property>	
@@ -107,4 +111,9 @@
 			</attributes>
 		</source_name>
 	</Recommender_sources>
+	<SemanticDB_Virtuoso>
+		<http_location> http://localhost </http_location>	
+		<port> 8890 </port>	
+		<folder_end_point> /sparql </folder_end_point>	
+	</SemanticDB_Virtuoso>	
 </metadata_recommender>	

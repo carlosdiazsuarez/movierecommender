@@ -8,6 +8,8 @@ import re
 import web
 
 import Recommender
+import Recommender_part2
+
 
 render = web.template.render('templates/')
 
@@ -79,17 +81,37 @@ class movie:
         source_name3 = 'TWITTER_source'
         input = web.input(name=None, uri=None)
         
+        '''
+        Request the movie info from the sources
+        '''
         Recommender.DBPEDIA_request_movie_info(input.uri, source_name1, metadata_mappings, metadata_content)
         Recommender.OMDB_request_movie_info(input.name, source_name2, metadata_mappings, metadata_content)
         Recommender.TWITTER_SOURCE_request_movie_info(input.name, source_name3, metadata_mappings, metadata_content)
 
+        '''
+        Insert the user interaction in Virtuoso 
+        '''
         Recommender.VIRTUOSO_insert_user_interaction(str(userId), input.uri)
-        Recommender.content_based_recommender(input.uri, metadata_mappings, metadata_content)
-                       
-
-        info = Recommender.VIRTUOSO_request_movie_info_byURI(input.uri)
-        triples = Recommender.VIRTUOSO_entity_resolution_byName(input.name, source_name2)
         
+        '''
+        Insert the content based recommendations in Virtuoso
+        '''
+        Recommender.content_based_recommender(input.uri, metadata_mappings, metadata_content)
+             
+        '''
+        Insert the user based recommendations from Movilens in Virtuoso
+        '''
+        #Recommender_part2.MOVILENS_initialization()
+                       
+        '''
+        Request movie DBpedia info from Virtuoso 
+        '''
+        info = Recommender.VIRTUOSO_request_movie_info_byURI(input.uri)
+        
+        '''
+        Apply entity resolution to the other sources (OMDB) and append results to previous info
+        '''
+        triples = Recommender.VIRTUOSO_entity_resolution_byName(input.name, source_name2)        
         for triple in triples:
             info.append(triple)
 
@@ -124,10 +146,26 @@ class movie:
                 movie_directors.append(field[2])
             if field[1] == 'https://schema.org/actor':
                 movie_actors.append(field[2])                
-                
+        
+        '''
+        Get content-based recommendations 
+        '''        
         cbrs = Recommender.VIRTUOSO_request_content_based_recommendation(input.uri)
-        tweets = Recommender.VIRTUOSO_request_tweets_byName(input.name, source_name3)
+        
+        '''
+        Get user-based recommendations from user interaction
+        '''
         ubrs = Recommender.VIRTUOSO_request_user_based_recommender_byUserInteraction(userId, input.uri)
+        
+        '''
+        Get user-based recommendations from Movilens
+        '''
+        #ubrs_Movilens = Recommender_part2.MOVILENS_get_user_based_recommendations()        
+        
+        '''
+        Get enrichment as Tweets
+        '''
+        tweets = Recommender.VIRTUOSO_request_tweets_byName(input.name, source_name3)
                           
         return render.movie(input.uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, ubrs, tweets)
     
