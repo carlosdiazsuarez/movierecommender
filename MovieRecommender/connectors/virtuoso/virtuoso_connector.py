@@ -35,7 +35,7 @@ class VirtuosoConnector(object):
         print '*'*40
         
     def query(self, query):
-        # launch
+        # launchVIRTUOSO_doDataLakeTransformations():
         try:
             result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
             print query
@@ -52,8 +52,72 @@ class VirtuosoConnector(object):
             print e.message
             print 'Query: '
             print query
-            pass           
+            pass
+        
+        
+    ''' 
+        A more generic delete function
+    '''    
+    def add(self, in_RDFGraph, in_RDFGraph2):
 
+        print '\n' + '*'*40
+        print 'VIRTUOSO CONNECTOR add'
+        print '*'*40
+        
+        query = 'ADD <' + in_RDFGraph + '> TO <' + in_RDFGraph2 + '>'        
+    
+        # launch
+        try:
+            result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
+            print query
+                        
+        except sparql.SparqlException as e:
+            print 'Exception: '
+            print e.message
+            print 'Query: '
+            print query
+            return -1
+        
+        return 0               
+
+    ''' 
+        A more generic delete function
+    '''    
+    def delete(self, in_triples, in_RDFGraph):
+
+        print '\n' + '*'*40
+        print 'VIRTUOSO CONNECTOR delete'
+        print '*'*40
+        
+        for triple in in_triples:
+            '''
+            query = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> '
+            query += 'PREFIX foaf:  <http://xmlns.com/foaf/0.1/> '
+            '''
+            query = 'DELETE FROM GRAPH <' + in_RDFGraph + '> '        
+            query += '{ '
+            if isinstance(triple[2], basestring) and "http" in triple[2] and not (".jpg" in triple[2]):
+                query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> . '
+            elif isinstance(triple[2], basestring):
+                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2].replace('"','').replace("'","") +  '" . '
+            else:
+                query += '<' + triple[0] + '> <' + triple[1] + '> ' + str(triple[2]) + ''
+            query += '}'
+        
+            # launch
+            try:
+                result = sparql.query(self.VIRTUOSO_SPARQL_ENDPOINT, query)
+                print query
+                            
+            except sparql.SparqlException as e:
+                print 'Exception: '
+                print e.message
+                print 'Query: '
+                print query
+                return -1
+        
+        return 0
+        
         
     ''' 
         A more generic insert function
@@ -72,10 +136,20 @@ class VirtuosoConnector(object):
             query = 'INSERT IN GRAPH <' + in_RDFGraph + '> '        
             query += '{ '
 
-            if "http" in triple[2]:
+            '''
+            if isinstance(triple[2], (int, long, float, complex)):
+                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2] + '"'
+            elif "http" in triple[2]:
                 query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> . '
             else: 
-                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2].replace('"','') +  '" . '
+                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2].replace('"','').replace("'","") +  '" . '
+            '''
+            if isinstance(triple[2], basestring) and "http" in triple[2] and not (".jpg" in triple[2]):
+                query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> . '
+            elif isinstance(triple[2], basestring):
+                query += '<' + triple[0] + '> <' + triple[1] + '> "' + triple[2].replace('"','').replace("'","") +  '" . '
+            else:
+                query += '<' + triple[0] + '> <' + triple[1] + '> ' + str(triple[2]) + ''
             
             query += '}'
         
@@ -126,7 +200,7 @@ class VirtuosoConnector(object):
                 single_triple = '<' + in_triples_lists[i][0] + '> <' + in_triples_lists[i][1] + '> ' + in_triples_lists[i][2] + ' .'
             else:
                 #single_triple = '<' + in_triples_lists[i][0] + '> <' + in_triples_lists[i][1] + '> '+ '"' + in_triples_lists[i][2] + '"' + '.' 
-                single_triple = '<' + in_triples_lists[i][0] + '> <' + in_triples_lists[i][1] + '> '+ '"' + in_triples_lists[i][2].replace('"', '') + '"' + '.' 
+                single_triple = '<' + in_triples_lists[i][0] + '> <' + in_triples_lists[i][1] + '> '+ '"' + in_triples_lists[i][2].replace('"', '').replace("'","") + '"' + '.' 
             SPQRQL_query_triple_part += single_triple + '\n'
         SPQRQL_query_triple_part += '}'
         

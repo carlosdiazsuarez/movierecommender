@@ -23,11 +23,14 @@ from connectors.http_api_request.http_api_request_connector import http_api_requ
 from connectors.imdb.imdb_connector import IMDB
 from connectors.twitter.twitter_patternPkg_connector import twitter_patternPkg_connector
 from connectors.virtuoso.virtuoso_connector import VirtuosoConnector
+from connectors.virtuoso.virtuoso_connector2 import virtuoso_connector
+from Recommender_part2 import RDF_GRAPH_RECOMMENDER
 
 
 ##########################################################################
 # initialize virtuoso
-RDF_GRAPH_RECOMMENDER = 'OD_RDF_Graph_Recommender' 
+RDF_GRAPH_RECOMMENDER = 'OD_RDF_Graph_Recommender'
+RDF_GRAPH_FINAL = 'OD_RDF_Graph_Final' 
 
 # Connectors
 virtuosoConnector = VirtuosoConnector()
@@ -342,13 +345,14 @@ def DBPEDIA_request_movie_byName(in_name, in_metadata_mappings, in_metadata_cont
     
     return movies
 
-def VIRTUOSO_request_theaters_byCity(in_city_name):
+def VIRTUOSO_request_theaters_byCity(in_city_name, in_rdf_graph):
 
     print '\n' + '*'*40    
     print 'VIRTUOSO_request_theaters_byCity'
     print '*'*40    
         
     query = 'SELECT ?s ?p ?o\n'
+    query += 'FROM <' + in_rdf_graph + '>\n'
     query += 'WHERE {\n'
     query += '?s ?p ?o .\n'
     query += '?s <https://schema.org/name> ?o .\n'
@@ -361,13 +365,14 @@ def VIRTUOSO_request_theaters_byCity(in_city_name):
     
     return triples
 
-def VIRTUOSO_request_movies_byAlternateName(in_alternateName):
+def VIRTUOSO_request_movies_byAlternateName(in_alternateName, in_rdf_graph):
 
     print '\n' + '*'*40    
     print 'VIRTUOSO_request_movies_byAlternateName'
     print '*'*40    
         
     query = 'SELECT ?s ?p ?name\n'
+    query += 'FROM <' + in_rdf_graph + '>\n'    
     query += 'WHERE {\n'
     query += '?s <https://schema.org/name> ?name .\n'
     query += '?s <https://schema.org/alternateName> ?o .\n'
@@ -421,13 +426,14 @@ def VIRTUOSO_entity_resolution_byName(in_name, in_source_name):
     return results
         
 
-def VIRTUOSO_request_movie_info_byURI(in_URI):
+def VIRTUOSO_request_movie_info_byURI(in_URI, in_rdf_graph):
 
     print '\n' + '*'*40    
     print 'VIRTUOSO_request_movies_byURI'
     print '*'*40    
         
     query = 'SELECT ?s ?p ?o\n'
+    query += 'FROM <' + in_rdf_graph + '>\n'
     query += 'WHERE {\n'
     query += '?s ?p ?o .\n'
     query += 'FILTER (?s = <' + in_URI + '> )\n'    
@@ -440,13 +446,14 @@ def VIRTUOSO_request_movie_info_byURI(in_URI):
     return results
 
 
-def VIRTUOSO_request_movies_byCity(in_city_name):
+def VIRTUOSO_request_movies_byCity(in_city_name, in_rdf_graph):
 
     print '\n' + '*'*40    
     print 'VIRTUOSO_request_movies_byCity'
     print '*'*40    
         
     query = 'SELECT ?s ?p ?o\n'
+    query += 'FROM <' + in_rdf_graph + '>\n'
     query += 'WHERE {\n'
     query += '?s ?p ?o .\n'
     query += '?s <https://schema.org/event> ?o .\n' 
@@ -588,7 +595,7 @@ def content_based_recommender(in_movie_uri, in_metadata_mappings, in_metadata_co
     print 'CONTENT BASED RECOMMENDER (content_based_recommender)'
     print '*'*40  
     
-    results = VIRTUOSO_request_movie_info_byURI(in_movie_uri)
+    results = VIRTUOSO_request_movie_info_byURI(in_movie_uri, RDF_GRAPH_RECOMMENDER)
     
     for result in results:
         if result[1] == "https://schema.org/director":
@@ -633,6 +640,7 @@ def VIRTUOSO_request_user_based_recommender_byUserInteraction(in_userId, in_movi
     username = 'USER_'+in_userId
     
     query = 'SELECT ?s ?p ?o\n'
+    query += 'FROM <' + RDF_GRAPH_FINAL + '>\n'
     query += 'WHERE {\n'
     query += '?s <https://schema.org/UserInteraction> <'+ in_movie_uri + '> .\n' 
     query += '}'
@@ -645,6 +653,7 @@ def VIRTUOSO_request_user_based_recommender_byUserInteraction(in_userId, in_movi
         if user != username:
             movies = []
             query = 'SELECT ?s ?p ?o\n'
+            query += 'FROM <' + RDF_GRAPH_FINAL + '>\n'
             query += 'WHERE {\n'
             query += '<'+ user +'> <https://schema.org/UserInteraction> ?o .\n' 
             query += '}'
@@ -658,6 +667,7 @@ def VIRTUOSO_request_user_based_recommender_byUserInteraction(in_userId, in_movi
     recommendations = []
     for movie_uri in final_movies:
         query = 'SELECT ?s ?p ?o\n'
+        query += 'FROM <' + RDF_GRAPH_FINAL + '>\n'
         query += 'WHERE {\n'
         query += '?s <https://schema.org/name> ?o .\n'
         query += 'FILTER (?s = <' + movie_uri + '>)'
@@ -675,6 +685,7 @@ def VIRTUOSO_request_content_based_recommendation(in_movie_uri):
     print '*'*40    
         
     query = 'SELECT ?s ?p ?o\n'
+    query += 'FROM <' + RDF_GRAPH_FINAL + '>\n'
     query += 'WHERE {\n'
     query += '<' + in_movie_uri + '> <https://schema.org/director> ?o .\n' 
     query += '}'
@@ -683,15 +694,83 @@ def VIRTUOSO_request_content_based_recommendation(in_movie_uri):
     
     recommendations = []
     for triple in triples:
-        query = 'SELECT ?s ?p ?o\n'
-        query += 'WHERE {\n'
-        query += '?s <https://schema.org/name> ?o .\n'        
-        query += '?s <https://schema.org/director> ?director .\n'
-        query += 'FILTER contains(str(?director), "'+  triple[2] + '" )'
-        query += '}'
-        results = virtuosoConnector.query(query) 
-        for result in results:
-            if result[0] != in_movie_uri:
-                recommendations.append(result)        
+        if "http" in triple[2]:
+            query = 'SELECT ?s ?p ?o\n'
+            query += 'FROM <' + RDF_GRAPH_FINAL + '>\n'
+            query += 'WHERE {\n'
+            query += '?s <https://schema.org/name> ?o .\n'        
+            query += '?s <https://schema.org/director> ?director .\n'
+            query += 'FILTER contains(str(?director), "'+  triple[2] + '" )'
+            query += '}'
+            results = virtuosoConnector.query(query) 
+            for result in results:
+                if result[0] != in_movie_uri:
+                    recommendations.append(result)
+                            
+    return recommendations
+
+def VIRTUOSO_doDataLakeTransformations():    
+    
+    '''
+    ENTITY RESOLUTION FOR OMDB
+    '''
+    
+    # Get all the triples from OMDB
+    q = '''
+            SELECT ?s ?p ?o
+            FROM <''' + RDF_GRAPH_RECOMMENDER + '''>
+            WHERE {
+                ?s ?p ?o .
+                FILTER contains(str(?s), "OMDB_source")
+            }
+            '''
+    
+    old_triples = virtuosoConnector.query(q)
+
+    new_triples = []
             
-    return recommendations        
+    for triple in old_triples:
+                
+        #Find the name for entity resolution
+        q = '''
+            SELECT ?s ?p ?o
+            FROM <''' + RDF_GRAPH_RECOMMENDER + '''>
+            WHERE {
+                <''' + triple[0] + '''> <https://schema.org/name> ?o .                    
+            }
+            '''
+        omdb_name = virtuosoConnector.query(q)
+            
+        # Find the uri for entity resolution
+        q = '''
+            SELECT ?s ?p ?o
+            FROM <''' + RDF_GRAPH_RECOMMENDER + '''>
+            WHERE {
+                ?s <https://schema.org/name> ?o .
+                FILTER (str(?o) = "''' + omdb_name[0][2] + '''")
+                FILTER contains(str(?s), "http")
+            }            
+            '''
+        uris = virtuosoConnector.query(q)
+        
+        for uri in uris:
+            # Create the new triple with the right uri and values
+            new_triple = []
+            new_triple.append(uri[0])
+            new_triple.append(triple[1])
+            new_triple.append(triple[2])            
+            new_triples.append(new_triple)                
+
+    virtuosoConnector.delete(old_triples, RDF_GRAPH_RECOMMENDER);
+    
+    virtuosoConnector.add(RDF_GRAPH_RECOMMENDER, RDF_GRAPH_FINAL)  
+            
+    virtuosoConnector.insert(new_triples, RDF_GRAPH_FINAL);
+        
+    
+
+    
+    
+    
+     
+    

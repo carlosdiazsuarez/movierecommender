@@ -10,6 +10,7 @@ import sys
 
 import Recommender
 import Recommender_part2
+from Recommender import RDF_GRAPH_FINAL
 
 
 render = web.template.render('templates/')
@@ -58,8 +59,16 @@ class coldstart:
         source_name = 'GOOGLE_MOVIE_SHOWTIMES_source'
         input = web.input(city=None)       
         Recommender.GMS_request_movies_info(input.city, source_name, metadata_mappings, metadata_content)
-        theaters = Recommender.VIRTUOSO_request_theaters_byCity(input.city)
-        movies = Recommender.VIRTUOSO_request_movies_byCity(input.city)
+        
+        '''
+        Do Data Lake Transformations
+        '''                            
+        Recommender.VIRTUOSO_doDataLakeTransformations()
+        
+        theaters = Recommender.VIRTUOSO_request_theaters_byCity(input.city, RDF_GRAPH_FINAL)
+        
+        movies = Recommender.VIRTUOSO_request_movies_byCity(input.city, RDF_GRAPH_FINAL)
+        
         return render.coldstart(input.city, theaters, movies )                                      
 
 class search:
@@ -69,7 +78,14 @@ class search:
         
         input = web.input(movie=None)
         Recommender.IMDB_search_movies_byName(input.movie, metadata_mappings, metadata_content)
-        movies = Recommender.VIRTUOSO_request_movies_byAlternateName(input.movie)                    
+        
+        '''
+        Do Data Lake Transformations
+        '''                            
+        Recommender.VIRTUOSO_doDataLakeTransformations()
+        
+        movies = Recommender.VIRTUOSO_request_movies_byAlternateName(input.movie, RDF_GRAPH_FINAL)
+                            
         return render.search(input.movie, movies)
     
 class movie:
@@ -100,17 +116,24 @@ class movie:
         Recommender.content_based_recommender(input.uri, metadata_mappings, metadata_content)
                                     
         '''
+        Do Data Lake Transformations
+        '''                            
+        Recommender.VIRTUOSO_doDataLakeTransformations()
+        
+        '''
         Request movie DBpedia info from Virtuoso 
         '''
-        info = Recommender.VIRTUOSO_request_movie_info_byURI(input.uri)
+        info = Recommender.VIRTUOSO_request_movie_info_byURI(input.uri, RDF_GRAPH_FINAL)
         
         '''
         Apply entity resolution to the other sources (OMDB) and append results to previous info
         '''
+        '''
         triples = Recommender.VIRTUOSO_entity_resolution_byName(input.name, source_name2)        
         for triple in triples:
             info.append(triple)
-
+        '''
+        
         '''
         IMPORTANT: FIRST, TAKE THE VALUE FROM DBPEDIA
                     IF MISSING, TAKE THE VALUE FROM OMDB
@@ -141,8 +164,8 @@ class movie:
             if field[1] == 'https://schema.org/director':
                 movie_directors.append(field[2])
             if field[1] == 'https://schema.org/actor':
-                movie_actors.append(field[2])                
-        
+                movie_actors.append(field[2])                        
+                        
         '''
         Get content-based recommendations 
         '''        
