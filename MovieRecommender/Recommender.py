@@ -612,6 +612,19 @@ def content_based_recommender(in_movie_uri, in_metadata_mappings, in_metadata_co
                     pass                      
     return
 
+def VIRTUOSO_request_user_based_recommender_byMovieNames(in_triples, in_metadata_mappings, in_metadata_content):
+    print '\n' + '*'*40    
+    print 'VIRTUOSO_request_user_based_recommender_byMovieNames'
+    print '*'*40    
+
+    all_movies = []
+    for triple in in_triples:
+        movies = DBPEDIA_request_movie_byName(triple[2], in_metadata_mappings, in_metadata_content)
+        for movies in movies:
+            all_movies.append(movies)
+                         
+    return all_movies
+
 def VIRTUOSO_request_user_based_recommender_byUserInteraction(in_userId, in_movie_uri):
     print '\n' + '*'*40    
     print 'VIRTUOSO_request_user_based_recommender_byUserInteraction'

@@ -6,6 +6,7 @@ Created on 25/05/2015
 
 import re
 import web
+import sys
 
 import Recommender
 import Recommender_part2
@@ -97,12 +98,7 @@ class movie:
         Insert the content based recommendations in Virtuoso
         '''
         Recommender.content_based_recommender(input.uri, metadata_mappings, metadata_content)
-             
-        '''
-        Insert the user based recommendations from Movilens in Virtuoso
-        '''
-        #Recommender_part2.MOVILENS_initialization()
-                       
+                                    
         '''
         Request movie DBpedia info from Virtuoso 
         '''
@@ -160,15 +156,23 @@ class movie:
         '''
         Get user-based recommendations from Movilens
         '''
-        #ubrs_Movilens = Recommender_part2.MOVILENS_get_user_based_recommendations()        
+        ubrs_Movilens = Recommender_part2.MOVILENS_get_user_based_recommendations()        
+        ubrs2 = Recommender.VIRTUOSO_request_user_based_recommender_byMovieNames(ubrs_Movilens, metadata_mappings, metadata_content)        
         
         '''
         Get enrichment as Tweets
         '''
         tweets = Recommender.VIRTUOSO_request_tweets_byName(input.name, source_name3)
                           
-        return render.movie(input.uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, ubrs, tweets)
+        return render.movie(input.uri, movie_name, movie_image, movie_desc, movie_year, movie_genre, movie_directors, movie_actors, cbrs, ubrs, ubrs2, tweets)
     
-if __name__ == "__main__":
+if __name__ == "__main__":    
+    '''
+    Insert the user based recommendations from Movilens in Virtuoso
+    '''
+    if str(sys.argv[2]) == "true":
+        Recommender_part2.MOVILENS_initialization()
+    
     app = web.application(urls, globals())
+
     app.run()

@@ -117,10 +117,10 @@ class collaboratory_filtering_UserBased(object):
         print '\n' + '*'*40
         print 'GET RECOMMENDATIONS (USER BASED) ----> ' + person + ': ' + str(self.getRecommendations(in_critics, person))
         
-        print 'GET RECOMMENDATIONS (USER BASED) ----> ' + 'URI_MOVIELENS_USER_JaimePrimo' + ': ' + str(self.getRecommendations(in_critics, 'URI_MOVIELENS_USER_JaimePrimo'))
-        print 'GET RECOMMENDATIONS (USER BASED) ----> ' + 'URI_MOVIELENS_USER_JesulinUbrique' + ': ' + str(self.getRecommendations(in_critics, 'URI_MOVIELENS_USER_JesulinUbrique'))
-        print 'GET RECOMMENDATIONS (USER BASED) ----> ' + 'URI_MOVIELENS_USER_170' + ': ' + str(self.getRecommendations(in_critics, 'URI_MOVIELENS_USER_170'))                    
-        print '*'*40
+        #print 'GET RECOMMENDATIONS (USER BASED) ----> ' + 'URI_MOVIELENS_USER_JaimePrimo' + ': ' + str(self.getRecommendations(in_critics, 'URI_MOVIELENS_USER_JaimePrimo'))
+        #print 'GET RECOMMENDATIONS (USER BASED) ----> ' + 'URI_MOVIELENS_USER_JesulinUbrique' + ': ' + str(self.getRecommendations(in_critics, 'URI_MOVIELENS_USER_JesulinUbrique'))
+        #print 'GET RECOMMENDATIONS (USER BASED) ----> ' + 'URI_MOVIELENS_USER_170' + ': ' + str(self.getRecommendations(in_critics, 'URI_MOVIELENS_USER_170'))                    
+        #print '*'*40
         return self.getRecommendations(in_critics, person)
         
         

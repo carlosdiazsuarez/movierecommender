@@ -122,15 +122,15 @@ var __st={"a":1478382,"offset":-14400,"reqid":"2804fd05-276d-4d0c-8744-3f8826a77
   <div class="grid">
     <div id="page-content" class="grid-item col-8 small--col-12">
       <div class="rte">
-<p>Country Code: <span id="country-code"></span></p>
-<p>Country Name: <span id="country-name"></span></p>
+<p>Country Code: <span id="countryCode"></span></p>
+<p>Country Name: <span id="country"></span></p>
 <p>City: <span id="city"></span></p>
-<p>IP: <span id="ip"></span></p>
-<p>Region code: <span id="region-code"></span></p>
-<p>Region name: <span id="region-name"></span></p>
-<p>Longitude: <span id="longitude"></span></p>
-<p>Latitude: <span id="latitude"></span></p>
-<p>Postal Code: <span id="zipcode"></span></p>
+<p>IP: <span id="query"></span></p>
+<p>Region code: <span id="region"></span></p>
+<p>Region name: <span id="regionName"></span></p>
+<p>Longitude: <span id="lon"></span></p>
+<p>Latitude: <span id="lat"></span></p>
+<p>Postal Code: <span id="zip"></span></p>
 <script>// <![CDATA[
 jQuery.ajax({
   url: '//ip-api.com/json/',
@@ -138,14 +138,14 @@ jQuery.ajax({
   dataType: 'jsonp',
   success: function (location) {
 	  jQuery('#city').html(location.city);
-	  jQuery('#region').html(location.region_code);
-	  jQuery('#regionName').html(location.region_name);
-	  jQuery('#query').html(location.ip);
-	  jQuery('#zip').html(location.zipcode);
-	  jQuery('#lon').html(location.longitude);
-	  jQuery('#lat').html(location.latitude);
-	  jQuery('#country').html(location.country_name);
-	  jQuery('#countryCode').html(location.country_code);
+	  jQuery('#country').html(location.country);
+	  jQuery('#countryCode').html(location.countryCode);
+	  jQuery('#lat').html(location.lat);
+	  jQuery('#lon').html(location.lon);
+	  jQuery('#query').html(location.query);	  
+	  jQuery('#region').html(location.region);
+	  jQuery('#regionName').html(location.regionName);	  
+	  jQuery('#zip').html(location.zip);	  	  
 	  window.top.location.href = 'http://localhost:8081/coldstart?city='+location.city;	  
   }  
 });

@@ -462,7 +462,8 @@ def storeInVirtuoso_UserRatingsOnFilms(in_user, in_movie, in_rating, in_RDFgraph
 
     print 'storeInVirtuoso_UserRatingsOnFilms -----> '
     print all_triples
-    virtuoso_conn.insert_triples_user_rating_movie(all_triples, in_RDFgraph, '')
+    #virtuoso_conn.insert_triples_user_rating_movie(all_triples, in_RDFgraph, '')
+    virtuoso_conn.insert(all_triples, in_RDFgraph)
 
     last_RatingIDNUM_in_System += 1                       
     print 'ADDING RATING -> (USER: '+ in_user + ') - (MOVIE: ' + in_movie + ' ) - (RATING: ' + str(in_rating) + ')'
@@ -540,6 +541,10 @@ def MOVIELENS_SOURCE_Load_from_Memory_TO_VIRTUOSO_in_pieces(in_film_all_triples,
     film_all_triples_ByChunks = []
     max_tripples = len(in_film_all_triples)
     print 'MAX NUM TRIPPLES: ' + str(max_tripples)
+    
+    in_virtuoso_conn.insert(in_film_all_triples, in_RDF_GRAPH_RECOMMENDER)
+    
+    '''
     j = 0
     while j <= max_tripples:
         film_all_triples_ByChunks = in_film_all_triples[j: (j+1400)]
@@ -550,7 +555,7 @@ def MOVIELENS_SOURCE_Load_from_Memory_TO_VIRTUOSO_in_pieces(in_film_all_triples,
         j = j+1400
         print 'J             ==========' + str(j)
         print '(TRIPLES      ==========' + str(len(in_film_all_triples)) + ')' + ' LONGITUD RATINGS ALL: ' + str(len(in_film_all_triples)/4)
-    
+    '''
 
 
 def MOVIELENS_SOURCE_recommendations_IN_triple_format (in_recommendation_For_OD_System_User, in_source_type_to_check_real_name, in_metadata_mappings, in_metadata_content):
@@ -642,7 +647,8 @@ def MOVILENS_initialization():
     print 'LONGITUD RATINGS ALL: ' + str(len(film_all_triples)/4) + ' (TRIPLES: ' + str(len(film_all_triples)) + ')'
             
     # 2. LOAD ALL THE TRIPLES INTO VIRTUOSO IN PIECES OF 1400 TRIPLES IN EACH CALL (OTHERWISE VIRTUOSO WILL NOT ACCEPT ALL TRIPPLES IN 1 SINGLE CALL) 
-    MOVIELENS_SOURCE_Load_from_Memory_TO_VIRTUOSO_in_pieces(film_all_triples, virtuoso_conn, RDF_GRAPH_RECOMMENDER, in_source['source_name'])
+    # MOVIELENS_SOURCE_Load_from_Memory_TO_VIRTUOSO_in_pieces(film_all_triples, virtuoso_conn, RDF_GRAPH_RECOMMENDER, in_source['source_name'])
+    
             
     # 3. STORE SOME USER RATINGS FROM THE USER OF OUR OD SYSTEM (CARLOS & JAIME)           
     store_ODStudents_ratings (RDF_GRAPH_RECOMMENDER, metadata_mappings)
@@ -683,6 +689,9 @@ def MOVILENS_get_user_based_recommendations():
     source_type_to_check_real_name = 'HTTP_API_request'
     UB_CF_recommendation_all_triples = MOVIELENS_SOURCE_recommendations_IN_triple_format (recommendation_For_OD_System_User, source_type_to_check_real_name, metadata_mappings, metadata_content)
             
-    print '######################################## NOW THE RECOOMENDATIONS FOR CARLOS'
+    print '\n' + '*'*40
+    print 'MOVILENS RECOMMENDATIONS:'
+    print '*'*40
     print str(UB_CF_recommendation_all_triples)
-    return
+    
+    return UB_CF_recommendation_all_triples

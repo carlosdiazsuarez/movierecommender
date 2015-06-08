@@ -5,13 +5,14 @@ Created on 14/04/2015
 '''
 
 import sys, getopt
-import sparql 
+import sparql
+
+DBPEDIA_ENDPOINT = "http://live.dbpedia.org/sparql/"
 
 class DBpedia(object):
     '''
     classdocs
     '''
-
     def __init__(self):
         '''
         Constructor
@@ -20,7 +21,7 @@ class DBpedia(object):
     def query(self, q):
         print q 
         
-        result = sparql.query('http://dbpedia.org/sparql', q)
+        result = sparql.query(DBPEDIA_ENDPOINT, q)
                 
         return result        
         
@@ -40,7 +41,7 @@ class DBpedia(object):
         
         try:
         
-            result = sparql.query('http://dbpedia.org/sparql', q)
+            result = sparql.query(DBPEDIA_ENDPOINT, q)
             return result
             
         except sparql.SparqlException as e:
@@ -64,7 +65,7 @@ class DBpedia(object):
         
         print q
         
-        result = sparql.query('http://dbpedia.org/sparql', q)
+        result = sparql.query(DBPEDIA_ENDPOINT, q)
                 
         return result
 
