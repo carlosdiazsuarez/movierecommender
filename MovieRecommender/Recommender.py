@@ -740,26 +740,29 @@ def VIRTUOSO_doDataLakeTransformations():
             }
             '''
         omdb_name = virtuosoConnector.query(q)
-            
-        # Find the uri for entity resolution
-        q = '''
-            SELECT ?s ?p ?o
-            FROM <''' + RDF_GRAPH_RECOMMENDER + '''>
-            WHERE {
-                ?s <https://schema.org/name> ?o .
-                FILTER (str(?o) = "''' + omdb_name[0][2] + '''")
-                FILTER contains(str(?s), "http")
-            }            
-            '''
-        uris = virtuosoConnector.query(q)
         
-        for uri in uris:
-            # Create the new triple with the right uri and values
-            new_triple = []
-            new_triple.append(uri[0])
-            new_triple.append(triple[1])
-            new_triple.append(triple[2])            
-            new_triples.append(new_triple)                
+        if len(omdb_name) > 0:            
+            # Find the uri for entity resolution
+            q = '''
+                SELECT ?s ?p ?o
+                FROM <''' + RDF_GRAPH_RECOMMENDER + '''>
+                WHERE {
+                    ?s <https://schema.org/name> ?o .
+                    FILTER (str(?o) = "''' + omdb_name[0][2] + '''")
+                    FILTER contains(str(?s), "http")
+                }            
+                '''
+            uris = virtuosoConnector.query(q)
+            
+            if len(uris) > 0:
+            
+                for uri in uris:
+                    # Create the new triple with the right uri and values
+                    new_triple = []
+                    new_triple.append(uri[0])
+                    new_triple.append(triple[1])
+                    new_triple.append(triple[2])            
+                    new_triples.append(new_triple)                
 
     virtuosoConnector.delete(old_triples, RDF_GRAPH_RECOMMENDER);
     

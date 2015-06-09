@@ -322,7 +322,7 @@ class virtuoso_connector(object):
             query += '{ '
 
             if isinstance(triple[2], (int, long, float, complex)):
-                query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> . '
+                query += '<' + triple[0] + '> <' + triple[1] + '> ' + str(triple[2]) + ' . '
             elif "http" in triple[2]:
                 query += '<' + triple[0] + '> <' + triple[1] + '> <' + triple[2] + '> . '
             else: 

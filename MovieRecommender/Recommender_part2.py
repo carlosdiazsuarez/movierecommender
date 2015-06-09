@@ -9,12 +9,12 @@ from pattern.db import json
 import re
 from xml.dom import minidom
 
-from Recommender import readMetadata_sources, readMetadata_mappings
 from connectors.http_api_request.http_api_request_connector import http_api_request_connector
 from connectors.movielens.movielens_connector.movielens_connector import movielens_connector
 from connectors.twitter.twitter_patternPkg_connector import twitter_patternPkg_connector
 from connectors.virtuoso.virtuoso_connector2 import virtuoso_connector
 from recommender_algorithm.collaboratory_filtering_UserBased import collaboratory_filtering_UserBased
+
 
 ##########################################################################
 # initialize variables
@@ -647,8 +647,7 @@ def MOVILENS_initialization():
     print 'LONGITUD RATINGS ALL: ' + str(len(film_all_triples)/4) + ' (TRIPLES: ' + str(len(film_all_triples)) + ')'
             
     # 2. LOAD ALL THE TRIPLES INTO VIRTUOSO IN PIECES OF 1400 TRIPLES IN EACH CALL (OTHERWISE VIRTUOSO WILL NOT ACCEPT ALL TRIPPLES IN 1 SINGLE CALL) 
-    # MOVIELENS_SOURCE_Load_from_Memory_TO_VIRTUOSO_in_pieces(film_all_triples, virtuoso_conn, RDF_GRAPH_RECOMMENDER, in_source['source_name'])
-    
+    MOVIELENS_SOURCE_Load_from_Memory_TO_VIRTUOSO_in_pieces(film_all_triples, virtuoso_conn, RDF_GRAPH_RECOMMENDER, in_source['source_name'])    
             
     # 3. STORE SOME USER RATINGS FROM THE USER OF OUR OD SYSTEM (CARLOS & JAIME)           
     store_ODStudents_ratings (RDF_GRAPH_RECOMMENDER, metadata_mappings)
